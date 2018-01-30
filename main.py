@@ -1,146 +1,83 @@
+import motor
+import system
+import dynamixel_functions as dynamixel
 
-import os
-import settings
-import control
-import init
+device_name = "/dev/ttyUSB0".encode('utf-8')
+motor.init(device_name)
 
-if os.name == 'nt':
-    import msvcrt
-    def getch():
-        return msvcrt.getch().decode()
-else:
-    import sys, tty, termios
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    def getch():
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
+NUM_MOTORS = 7
 
-import dynamixel_functions as dynamixel                     # Uses Dynamixel SDK library
-
-# Control table address
-ADDR_MX_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
-ADDR_MX_GOAL_POSITION       = 30
-ADDR_MX_PRESENT_POSITION    = 36
-ADDR_BAUDRATE               = 4
-
-# Protocol version
-PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
+BASE = 0
+J1 = 1
+J2 = 2
+J3 = 3
+HEAD = 4
+RG = 5
+LG = 6
 
 
-#Settings
-DXL_ID                      = 6                             # Dynamixel ID: 1
-# BAUDRATE                    = 57600
-BAUDRATE                    = 1000000
-DEVICENAME                  = "/dev/ttyUSB0".encode('utf-8')# Check which port is being used on your controller
-                                                            # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
-
-TORQUE_ENABLE               = 1                             # Value for enabling the torque
-TORQUE_DISABLE              = 0                             # Value for disabling the torque
-#DXL_MINIMUM_POSITION_VALUE  = 2950                           # Dynamixel will rotate between this value
-#DXL_MAXIMUM_POSITION_VALUE  = 3000                          # and this value (note that the Dynamixel would not move when the position value is out of movable range. Check e-manual about the range of the Dynamixel you use.)
-
-DXL_MOVING_STATUS_THRESHOLD = 10                            # Dynamixel moving status threshold
-
-
-ESC_ASCII_VALUE             = 0x1b
-
-COMM_SUCCESS                = 0                             # Communication Success result value
-COMM_TX_FAIL                = -1001                         # Communication Tx Failed
-
-# Initialize PortHandler Structs
-# Set the port path
-# Get methods and members of PortHandlerLinux or PortHandlerWindows
-port_num = dynamixel.portHandler(DEVICENAME)
-
-# Initialize PacketHandler Structs
-dynamixel.packetHandler()
-
+position = [0 for ID in range(NUM_MOTORS)]
+goal_position = [[0 for idx in range(2)] for ID in range(NUM_MOTORS)]
 index = 0
-dxl_comm_result = COMM_TX_FAIL                              # Communication result
-#dxl_goal_position = [DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE]         # Goal position
 
-dxl_error = 0                                               # Dynamixel error
-dxl_present_position = 0                                    # Present position
 
-# Open port
-if dynamixel.openPort(port_num):
-    print("Succeeded to open the port!")
-else:
-    print("Failed to open the port!")
-    print("Press any key to terminate...")
-    getch()
-    quit()
+# while(1):
+#     read_positions = motor.read_several(range(NUM_MOTORS))
+#     for pos in range(NUM_MOTORS):
+#         print("[ID:%03d] PresPos:%03d" % (pos, read_positions[pos]))
+#     print('\n')
 
-# Set port baudrate
-if dynamixel.setBaudRate(port_num, BAUDRATE):
-    print("Succeeded to change the baudrate!")
-else:
-    print("Failed to change the baudrate!")
-    print("Press any key to terminate...")
-    getch()
-    quit()
 
-#Change baud rate (Do this on the initial baudrate)
-#dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_BAUDRATE, 1)
+motor.activate_several(range(NUM_MOTORS))
 
-# Enable Dynamixel Torque
-dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE)
-dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-if dxl_comm_result != COMM_SUCCESS:
-    print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-elif dxl_error != 0:
-    print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
-else:
-    print("Dynamixel has been successfully connected")
+moving_threshold = 10
 
-    # Read present position
-    dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_PRESENT_POSITION)
-    dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-    if dxl_comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-    elif dxl_error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
 
-    dxl_goal_position = [dxl_present_position + 30, dxl_present_position - 20]
+position[RG] = motor.read_position(RG)
+goal_position[RG] = [position[RG] - 20, position[RG] + 20]
 
-    print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_position))
+position[LG] = motor.read_position(LG)
+goal_position[LG] = [position[LG] + 20, position[LG] - 20]
+
+position = motor.read_several(range(NUM_MOTORS))
+for pos in range(NUM_MOTORS):
+    print("[ID:%03d] PresPos:%03d" % (pos, position[pos]))
+
+# print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (RG, goal_position[RG][index], position[RG]))
+# print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (LG, goal_position[LG][index], position[LG]))
 
 
 while 1:
     print("Press any key to continue! (or press ESC to quit!)")
-    if getch() == chr(ESC_ASCII_VALUE):
+    if system.press_ESC():
         break
 
-    # Write goal position
-    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_GOAL_POSITION, dxl_goal_position[index])
-    dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-    if dxl_comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-    elif dxl_error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
+    # if not motor.set_goal(RG, goal_position[RG][index]):
+    #     break
+    #
+    # if not motor.set_goal(LG, goal_position[LG][index]):
+    #     break
+
+    J3g = position[J3] + 20
+    if not motor.set_goal(J3, J3g):
+        break
 
     while 1:
-        # Read present position
-        dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_PRESENT_POSITION)
-        dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-        dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-        if dxl_comm_result != COMM_SUCCESS:
-            print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-        elif dxl_error != 0:
-            print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
 
-        print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_position))
+        position[J3] = motor.read_position(J3)
+        print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (J3, J3g, position[J3]))
 
-        if not (abs(dxl_goal_position[index] - dxl_present_position) > DXL_MOVING_STATUS_THRESHOLD):
+        if not (abs(J3g - position[J3]) > moving_threshold):
             break
+
+        # position[RG] = motor.read_position(RG)
+        # print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (RG, goal_position[RG][index], position[RG]))
+        #
+        # position[LG] = motor.read_position(LG)
+        # print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (LG, goal_position[LG][index], position[LG]))
+        #
+        # if not (abs(goal_position[RG][index] - position[RG]) > moving_threshold):
+        #     break
 
     # Change goal position
     if index == 0:
@@ -149,15 +86,6 @@ while 1:
         index = 0
 
 
-# Disable Dynamixel Torque
-dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE)
-dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-if dxl_comm_result != COMM_SUCCESS:
-    print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-elif dxl_error != 0:
-    print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
+motor.turn_off()
 
 
-# Close port
-dynamixel.closePort(port_num)
