@@ -19,6 +19,15 @@
 
 # Author: Ryu Woon Jung (Leon)
 
+#################################################################################
+# SETUP:
+# Clone Dynamixel SDK into the Pycharm folder.
+# Change the dynamixelfunctions.py file in python/dynamixelfunctions.py so that it compiles for Linux 64 bit (or whatever system you use).
+# Changed the readwrite.py file in python/protocol1 so that the DynamixelID and baudrate is right.
+# Finally, write this in the teminal: "sudo chmod a+rw /dev/ttyUSB0".
+# To run: Enter into python/protocol1_0 and run in terminal: "python read_write.py"
+#################################################################################
+
 import os
 import ctypes
 from ctypes import cdll
