@@ -1,86 +1,108 @@
 import dynamixel_functions as dynamixel                     # Uses Dynamixel SDK library
 
+#Name of connected USB device
+device_name = "/dev/ttyUSB0".encode('utf-8')
 
-# Read present position
-def read_current_position(DXL_ID, port_num, PROTOCOL_VERSION, ADDR_PRESENT_POSITION, COMM_SUCCESS):
+# Control table address
+ADDR_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
+ADDR_GOAL_POSITION       = 30
+ADDR_PRESENT_POSITION    = 36
+ADDR_BAUDRATE            =  4
+ADDR_TORQUE              = 14
+ADDR_I                   = 27
+ADDR_OFFSET              = 20
 
-    position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_PRESENT_POSITION)
-    comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
+#Other values
+PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
+BAUDRATE                    = 1000000                       # Some motors had BAUDRATE = 57600
+TORQUE_ENABLE               = 1                             # Value for enabling the torque
+TORQUE_DISABLE              = 0                             # Value for disabling the torque
+COMM_SUCCESS                = 0                             # Communication Success result value
+COMM_TX_FAIL                = -1001                         # Communication Tx Failed
+PORT = dynamixel.portHandler(device_name)                   # Initialize PortHandler Structs, set the port path and
+                                                            # get methods and members of PortHandlerLinux or PortHandlerWindows
 
-    if comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, comm_result))
-    elif error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, error))
 
-    return position
+def init():
+    dynamixel.packetHandler()                               # Initialize PacketHandler Structs
+    if dynamixel.openPort(PORT):                            # Open port
+        print("Succeeded to open the port!")
+    else:
+        print("Failed to open the port!")
+        quit()
+    if dynamixel.setBaudRate(PORT, BAUDRATE):               # Set port baudrate
+        print("Succeeded to set the baudrate!")
+    else:
+        print("Failed to change the baudrate!")
+        quit()
 
+def comm_error():
+    dxl_comm_result = dynamixel.getLastTxRxResult(PORT, PROTOCOL_VERSION)
+    dxl_error = dynamixel.getLastRxPacketError(PORT, PROTOCOL_VERSION)
 
-# Write goal position
-def write_goal_position(DXL_ID, goal, port_num, PROTOCOL_VERSION, ADDR_GOAL_POSITION, COMM_SUCCESS):
-
-    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_GOAL_POSITION, goal)
-    dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-
-    if dxl_comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-    elif dxl_error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
-
-# Enable Dynamixel Torque
-def enable_torque(DXL_ID, port_num, PROTOCOL_VERSION, ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE, COMM_SUCCESS):
-    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE)
-
-    dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
     if dxl_comm_result != COMM_SUCCESS:
         print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
     elif dxl_error != 0:
         print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
     else:
+        return 0
+    return 1
+
+
+def activate(ID):
+    dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
+    if not comm_error():
         return 1
     return 0
 
-# Set integral
-def write_integral(DXL_ID, I, port_num, PROTOCOL_VERSION, ADDR_I, COMM_SUCCESS):
+def read_position(ID):
+    position = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_PRESENT_POSITION)
+    if not comm_error():
+        return position
 
-    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_I, I)
-    dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
+def set_goal(ID, goal):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_GOAL_POSITION, goal)
+    if not comm_error():
+        return 1
+    return 0
 
-    if dxl_comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-    elif dxl_error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
+def set_I(ID, I):
+    dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_I, I)
+    if not comm_error():
+        return 1
+    return 0
 
-# Disable Dynamixel Torque
-def disable_torque(DXL_ID, port_num, PROTOCOL_VERSION, ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE, COMM_SUCCESS):
+def set_offset(ID, offset):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_OFFSET, offset)
+    if not comm_error():
+        return 1
+    return 0
 
-    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE)
-    dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
+def read_offset(ID):
+    offset = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_OFFSET)
+    if not comm_error():
+        return offset
 
-    if dxl_comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-    elif dxl_error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error))
+def read_max_torque(ID):
+    torque = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_TORQUE)
+    if not comm_error():
+        return torque
 
-# Read current max torque
-def read_maximum_torque(DXL_ID, port_num, PROTOCOL_VERSION, ADDR_TORQUE, COMM_SUCCESS):
+def change_baudrate(ID, baudrate_level):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_BAUDRATE, baudrate_level)
+    if not comm_error():
+        return 1
+    return 0
 
-    torque = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_TORQUE)
-    comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)
+def deactivate(ID):
+    dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
+    if not comm_error():
+        return 1
+    return 0
 
-    if comm_result != COMM_SUCCESS:
-        print(dynamixel.getTxRxResult(PROTOCOL_VERSION, comm_result))
-    elif error != 0:
-        print(dynamixel.getRxPacketError(PROTOCOL_VERSION, error))
+def close_port():
+    dynamixel.closePort(PORT)
 
-    return torque
 
-# Close port
-def close_port(port_num):
 
-    dynamixel.closePort(port_num)
+
