@@ -11,7 +11,6 @@ def init():
     position = read_positions()
     for ID, pos in enumerate(position):
         initial_position[ID] = int(pos)
-    print(initial_position)
 
 def unit_to_deg(pos):
     return pos * conv_unit
@@ -71,6 +70,17 @@ def set_I_all(I):
             return 0
     return 1
 
+def set_max_vel(ID, max_vel):
+    print('Max velocity of [ID:%d] set to %d RPM' % (ID, max_vel*0.114))
+    return driver.set_max_vel(ID, max_vel)
+
+def set_max_vel_arm(max_vel):
+    for ID in (range(NUM_MOTORS)):
+        if ID <= 4:
+            if not set_max_vel(ID, max_vel):
+                return 0
+    return 1
+
 def read_positions():
     positions = []
     for ID in (range(NUM_MOTORS)):
@@ -81,14 +91,19 @@ def read_positions():
 
 def set_goal(ID, goal):                     #DO NOT USE THIS YET UNLESS YOU KNOW WHAT YOU DO
     if active_motors[ID] == 1:
-        goal = int(deg_to_unit(goal))
-        status = driver.set_goal(ID, goal)
+        unit_goal = int(deg_to_unit(goal))
+        status = driver.set_goal(ID, unit_goal)
         if status == 1:
             goal_position[ID] = goal
         return status
     else:
         print('Motor is not activated')
         return 0
+
+def set_goals(goals):
+    for ID, goal in enumerate(goals):
+        set_goal(ID, goal)
+
 
 def get_goal():
     goal_ret = []
@@ -98,12 +113,12 @@ def get_goal():
 
 def set_rel_goal(ID, delta_pos):
     set_goal(ID, delta_pos + initial_position[ID])
-    goal_position[ID] = delta_pos + initial_position[ID]
+    #goal_position[ID] = delta_pos + initial_position[ID]
 
 def set_rel_goals(delta_pos):
     for ID, rel_goal in enumerate(delta_pos):
         set_goal(ID, rel_goal + initial_position[ID])
-        goal_position[ID] = rel_goal + initial_position[ID]
+        #goal_position[ID] = rel_goal + initial_position[ID]
 
 def reached_goal(moving_thresh):
     max_dist = 0

@@ -2,6 +2,7 @@ import motor
 import keyboard
 import display
 import controller
+import inv_kinematics
 
 #################################################################################
 # SETUP:
@@ -16,59 +17,43 @@ device_name = "/dev/ttyUSB0".encode('utf-8')
 motor.init()
 
 
-
 NUM_MOTORS = 7
-BASE = 0
-J1 = 1
-J2 = 2
-J3 = 3
-HEAD = 4
-RG = 5
-LG = 6
 
-#while 1:
-#    position = motor.read_positions()
-#    display.current_position()
+
+#controller.read_only()
 
 motor.activate_all()
-
 motor.set_I_all(10)
+motor.set_max_vel_arm(50)
 
+motor.set_rel_goals([0 for ID in range(NUM_MOTORS)])       # Set the goal position of the robot to its current position
 
-moving_threshold = 1
-position = motor.read_positions()
-display.current_position()
-
-rel_goal = [0 for ID in range(NUM_MOTORS)]
-motor.set_rel_goals(rel_goal)
-
-
-i = 0
+controller.set_head(0)
 while 1:
-    display.press_key()
-    if keyboard.press_ESC():
-        break
+    #display.press_key()
+    #if keyboard.press_ESC():
+    #    break
 
-    i = i + 1
+    r = 30
+    theta = 0
+    z = 10
 
-    if i%2 == 0:
-        controller.gripper(0)
-        #rel_goal[J2] = -2
-    else:
-        controller.gripper(6)
-        #rel_goal[J2] = 2
+    controller.gripper(0, wait=1)
 
-    #motor.set_rel_goals(rel_goal)
+    controller.set_position(r, theta, z, wait=1)
 
-    while 1:
+    controller.gripper(6, wait=1)
 
-        display.current_status()
-        if motor.reached_goal(moving_threshold):
-            for elem in rel_goal:
-                elem = 0
-            break
+    theta = 20
+
+    controller.set_position(r, theta, z, wait=1)
 
 
+
+r = 50
+theta = 0
+z = 10.5
+controller.set_position(r, theta, z, wait=1)
 
 motor.turn_off()
 

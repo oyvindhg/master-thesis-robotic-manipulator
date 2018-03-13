@@ -11,6 +11,7 @@ ADDR_BAUDRATE            =  4
 ADDR_TORQUE              = 14
 ADDR_I                   = 27
 ADDR_OFFSET              = 20
+ADDR_VEL                 = 32
 
 #Other values
 PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
@@ -68,6 +69,12 @@ def set_goal(ID, goal):
 
 def set_I(ID, I):
     dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_I, I)
+    if not comm_error():
+        return 1
+    return 0
+
+def set_max_vel(ID, max_vel):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_VEL, max_vel)
     if not comm_error():
         return 1
     return 0

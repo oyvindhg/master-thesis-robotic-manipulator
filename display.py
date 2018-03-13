@@ -7,6 +7,7 @@ def current_position():
     position = motor.read_positions()
     for i, pos_i in enumerate(position):
         print("[ID:%03d] PresPos: %d" % (i, pos_i))
+    print('')
 
 def goal_status(ID):
     position = motor.read_positions()
