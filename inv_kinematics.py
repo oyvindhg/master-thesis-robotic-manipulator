@@ -20,7 +20,9 @@ def joint_to_model_frame(ID, joint_deg):
 
 def model_to_joint_frame(ID, model_rad):
     model_deg = math.degrees(model_rad)
-    return model_deg + model[ID]
+    joint_deg = model_deg + model[ID]
+    print('joint', joint_deg)
+    return joint_deg
 
 def position_planner(target, current_joint_deg, show_plan=False):
 
@@ -34,20 +36,29 @@ def position_planner(target, current_joint_deg, show_plan=False):
 
     model_rad = my_chain.inverse_kinematics(target_frame, initial_position=current_model)
 
-    joint_deg = []
+
+    next_joint_deg = []
     for id, rad in enumerate(model_rad):
         ID = id - 1
         if ID >= 0 and ID <= 3:
-            joint_deg.append(model_to_joint_frame(ID, rad))
+            next_joint_deg.append(model_to_joint_frame(ID, rad))
 
     # real_frame = my_chain.forward_kinematics(my_chain.inverse_kinematics(target_frame))
     # print("Computed position vector : %s, original position vector : %s" % (real_frame[:3, 3], target_frame[:3, 3]))
 
+
+    check_sol = next_joint_deg[1] - 180 + next_joint_deg[2] - 180 + next_joint_deg[3] - 180
+    if abs(check_sol) > 180:
+        print("The robot is bending through itself")
+        plot_plan(my_chain, model_rad, target)
+        return current_joint_deg
+
+
     if show_plan:
-        print("The angles of each joints in joint ref are : ", joint_deg)
+        print("The angles of each joints in joint ref are : ", next_joint_deg)
         plot_plan(my_chain, model_rad, target)
 
-    return joint_deg
+    return next_joint_deg
 
 #position_planner([10,0,15], [315, 270, 180, 180, 0, 0, 0], show_plan=True)
 #position_planner([10,0,15], [316, 229, 216, 225, 172, 33, 57], show_plan=True)

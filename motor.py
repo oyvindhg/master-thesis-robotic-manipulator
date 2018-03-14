@@ -60,6 +60,20 @@ def read_offset(ID):
 def set_offset(ID, offset):
     return driver.set_offset(ID, offset)
 
+def read_CCW_limit(ID):                     #Default 4095 for BASE
+    return driver.read_CCW_limit(ID)
+
+def set_CCW_limit(ID, ccw):
+    print('CCW limit for [ID:%d] set to %d' % (ID, ccw))
+    return driver.set_CCW_limit(ID, ccw)
+
+def read_CW_limit(ID):                     #Default 0 for BASE
+    return driver.read_CW_limit(ID)
+
+def set_CW_limit(ID, cw):
+    print('CW limit for [ID:%d] set to %d' % (ID, cw))
+    return driver.set_CW_limit(ID, cw)
+
 def set_I(ID, I):
     print('Integral for [ID:%d] set to %d' % (ID, I))
     return driver.set_I(ID, I)
@@ -76,7 +90,7 @@ def set_max_vel(ID, max_vel):
 
 def set_max_vel_arm(max_vel):
     for ID in (range(NUM_MOTORS)):
-        if ID <= 4:
+        if ID <= 3:
             if not set_max_vel(ID, max_vel):
                 return 0
     return 1
@@ -85,6 +99,8 @@ def read_positions():
     positions = []
     for ID in (range(NUM_MOTORS)):
         pos = driver.read_position(ID)
+        if pos > 32767:
+            pos = (65535 - pos) * (-1)      #Converting two bytes from unsigned to signed
         pos = unit_to_deg(pos)
         positions.append(pos)
     return positions

@@ -1,7 +1,7 @@
 import dynamixel_functions as dynamixel                     # Uses Dynamixel SDK library
 
 #Name of connected USB device
-device_name = "/dev/ttyUSB0".encode('utf-8')
+device_name = "/dev/ttyUSB1".encode('utf-8')
 
 # Control table address
 ADDR_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
@@ -12,6 +12,8 @@ ADDR_TORQUE              = 14
 ADDR_I                   = 27
 ADDR_OFFSET              = 20
 ADDR_VEL                 = 32
+CCW_LIMIT                = 8
+CW_LIMIT                 = 6
 
 #Other values
 PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
@@ -75,6 +77,28 @@ def set_I(ID, I):
 
 def set_max_vel(ID, max_vel):
     dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_VEL, max_vel)
+    if not comm_error():
+        return 1
+    return 0
+
+def read_CW_limit(ID):
+    limit = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, CW_LIMIT)
+    if not comm_error():
+        return limit
+
+def set_CW_limit(ID, limit):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, CW_LIMIT, limit)
+    if not comm_error():
+        return 1
+    return 0
+
+def read_CCW_limit(ID):
+    limit = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, CCW_LIMIT)
+    if not comm_error():
+        return limit
+
+def set_CCW_limit(ID, limit):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, CCW_LIMIT, limit)
     if not comm_error():
         return 1
     return 0

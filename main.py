@@ -13,48 +13,54 @@ import inv_kinematics
 # To run: Enter into python/protocol1_0 and run in terminal: "python read_write.py"
 #################################################################################
 
-device_name = "/dev/ttyUSB0".encode('utf-8')
-motor.init()
 
+motor.init()
 
 NUM_MOTORS = 7
 
 
-#controller.read_only()
+display.press_key()
+if keyboard.press_ESC():
+    controller.read_only()
+
 
 motor.activate_all()
 motor.set_I_all(10)
-motor.set_max_vel_arm(50)
+
+motor.set_max_vel_arm(40)
 
 motor.set_rel_goals([0 for ID in range(NUM_MOTORS)])       # Set the goal position of the robot to its current position
 
-controller.set_head(0)
-while 1:
-    #display.press_key()
-    #if keyboard.press_ESC():
-    #    break
-
-    r = 30
-    theta = 0
-    z = 10
-
-    controller.gripper(0, wait=1)
-
-    controller.set_position(r, theta, z, wait=1)
-
-    controller.gripper(6, wait=1)
-
-    theta = 20
-
-    controller.set_position(r, theta, z, wait=1)
+controller.set_head(0, wait=1)
 
 
-
+theta = 90
 r = 50
-theta = 0
-z = 10.5
+z = 20
+
+controller.gripper(0, wait=1)
+
 controller.set_position(r, theta, z, wait=1)
 
-motor.turn_off()
+for i in range(5):
+    controller.gripper(6, wait=1)
+    controller.gripper(0, wait=1)
 
+
+print('lol')
+controller.set_head(-170)
+
+for i in range(10):
+    controller.gripper(6, wait=1)
+    controller.gripper(0, wait=1)
+
+controller.set_head(170)
+
+for i in range(30):
+    controller.gripper(6)
+    controller.gripper(0)
+
+controller.set_head(0, wait=1)
+
+controller.turn_off()
 
