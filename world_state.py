@@ -1,0 +1,18 @@
+
+class Position:
+    r = 0
+    theta = 0
+    z = 0
+    def __init__(self, r, theta, z):
+        self.r = r
+        self.theta = theta
+        self.z = z
+
+
+pos_map = {}
+
+pos_map['l1'] = Position(30, 1, 10)
+pos_map['l2'] = Position(30, 11, 10)
+
+def get_coordinates(location):
+    return pos_map[location]
