@@ -4,7 +4,9 @@ from IKPy.src import ikpy
 import numpy as np
 import math
 from plan_plot import plot_plan
+import logging
 
+logging = logging.getLogger(__name__)
 
 BASE_MODEL = 315
 LARM_MODEL = 270
@@ -21,7 +23,7 @@ def joint_to_model_frame(ID, joint_deg):
 def model_to_joint_frame(ID, model_rad):
     model_deg = math.degrees(model_rad)
     joint_deg = model_deg + model[ID]
-    print('joint', joint_deg)
+    logging.debug('Joint %d: %d', ID, joint_deg)
     return joint_deg
 
 def position_planner(target, current_joint_deg, show_plan=False):
@@ -32,7 +34,19 @@ def position_planner(target, current_joint_deg, show_plan=False):
             current_model[ID+1] = joint_to_model_frame(ID, deg)
 
     target_frame = np.eye(4)
+
+    # target_frame[0, 0] = 0.0
+    # target_frame[0, 1] = 1.0
+    # target_frame[1, 1] = 0.0
+    # target_frame[2, 0] = 1.0
+    # target_frame[2, 2] = 0.0
+    # target_frame[1, 2] = 1.0
+
+    print(target_frame)
+
+
     target_frame[:3, 3] = target
+
 
     model_rad = my_chain.inverse_kinematics(target_frame, initial_position=current_model)
 
@@ -49,13 +63,13 @@ def position_planner(target, current_joint_deg, show_plan=False):
 
     check_sol = next_joint_deg[1] - 180 + next_joint_deg[2] - 180 + next_joint_deg[3] - 180
     if abs(check_sol) > 180:
-        print("The robot is bending through itself")
+        logging.warning("The robot is bending through itself")
         plot_plan(my_chain, model_rad, target)
         return current_joint_deg
 
 
     if show_plan:
-        print("The angles of each joints in joint ref are : ", next_joint_deg)
+        logging.info("The angles of each joints in joint ref are:", next_joint_deg)
         plot_plan(my_chain, model_rad, target)
 
     return next_joint_deg

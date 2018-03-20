@@ -2,21 +2,29 @@ import motor
 import keyboard
 import display
 import controller
-import inv_kinematics
+import perception
+import planner
+import sys
+import logging
 
-#################################################################################
-# SETUP:
-# Clone Dynamixel SDK into the Pycharm folder.
-# Change the dynamixelfunctions.py file in python/dynamixelfunctions.py so that it compiles for Linux 64 bit (or whatever system you use).
-# Changed the readwrite.py file in python/protocol1 so that the DynamixelID and baudrate is right.
-# Finally, write this in the teminal: "sudo chmod a+rw /dev/ttyUSB0".
-# To run: Enter into python/protocol1_0 and run in terminal: "python read_write.py"
-#################################################################################
+log_level = "debug"
+logging.basicConfig(level=getattr(logging, log_level.upper()), format='%(name)-20s %(levelname)-20s %(message)s', stream=sys.stdout)
+logging = logging.getLogger(__name__)
 
 
 motor.init()
+controller.init()
 
-NUM_MOTORS = 7
+
+motor.set_max_torque(6, 40)
+motor.set_max_torque(5, 40)
+
+controller.close_grippers()
+
+while 1:
+    display.current_load_status()
+    if motor.reached_goal(1, 5):
+        break
 
 
 display.press_key()
@@ -24,43 +32,41 @@ if keyboard.press_ESC():
     controller.read_only()
 
 
-motor.activate_all()
-motor.set_I_all(10)
+controller.turn_off("return")
 
-motor.set_max_vel_arm(40)
+quit()
 
-motor.set_rel_goals([0 for ID in range(NUM_MOTORS)])       # Set the goal position of the robot to its current position
+plan = planner.start_plan()
 
-controller.set_head(0, wait=1)
+if plan is not None:
+    for step in plan:
+        operation = step.name
+        op_name = operation[0]
 
+        logging.info('Operation: %s', op_name)
 
-theta = 90
-r = 50
-z = 20
+        if op_name == "move":
+            next_loc_name = operation[2]
+            next_loc = perception.get_coordinates(next_loc_name)
+            controller.set_position(next_loc.r, next_loc.theta, next_loc.z)
 
-controller.gripper(0, wait=1)
+        elif op_name == "pickup":
+            controller.open_grippers(wait=1)
+            loc_name = operation[2]
+            loc = perception.get_coordinates(loc_name)
+            controller.set_position(loc.r, loc.theta, loc.z)
+            controller.set_position(loc.r, loc.theta, loc.z-2)
+            controller.close_grippers(wait=1)
+            controller.set_position(loc.r, loc.theta, loc.z)
 
-controller.set_position(r, theta, z, wait=1)
+        elif op_name == "place":
+            loc_name = operation[2]
+            loc = perception.get_coordinates(loc_name)
+            controller.set_position(loc.r, loc.theta, loc.z)
+            controller.set_position(loc.r, loc.theta, loc.z-2)
+            controller.open_grippers(wait=1)
+            controller.set_position(loc.r, loc.theta, loc.z)
 
-for i in range(5):
-    controller.gripper(6, wait=1)
-    controller.gripper(0, wait=1)
-
-
-print('lol')
-controller.set_head(-170)
-
-for i in range(10):
-    controller.gripper(6, wait=1)
-    controller.gripper(0, wait=1)
-
-controller.set_head(170)
-
-for i in range(30):
-    controller.gripper(6)
-    controller.gripper(0)
-
-controller.set_head(0, wait=1)
 
 controller.turn_off()
 

@@ -1,19 +1,32 @@
 import dynamixel_functions as dynamixel                     # Uses Dynamixel SDK library
+import logging
+logging = logging.getLogger(__name__)
+
+#################################################################################
+# SETUP:
+# Clone Dynamixel SDK into the Pycharm folder.
+# Change the dynamixelfunctions.py file in python/dynamixelfunctions.py so that it compiles for Linux 64 bit (or whatever system you use).
+# Changed the readwrite.py file in python/protocol1 so that the DynamixelID and baudrate is right.
+# Finally, write this in the teminal: "sudo chmod a+rw /dev/ttyUSB0".
+# To run: Enter into python/protocol1_0 and run in terminal: "python read_write.py"
+#################################################################################
 
 #Name of connected USB device
-device_name = "/dev/ttyUSB1".encode('utf-8')
+device_name = "/dev/ttyUSB0".encode('utf-8')
 
 # Control table address
 ADDR_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
 ADDR_GOAL_POSITION       = 30
 ADDR_PRESENT_POSITION    = 36
+ADDR_PRESENT_LOAD        = 40
 ADDR_BAUDRATE            =  4
-ADDR_TORQUE              = 14
+ADDR_TORQUE              = 34
 ADDR_I                   = 27
 ADDR_OFFSET              = 20
 ADDR_VEL                 = 32
-CCW_LIMIT                = 8
-CW_LIMIT                 = 6
+CCW_LIMIT                =  8
+CW_LIMIT                 =  6
+ADDR_GOAL_TORQUE         = 34
 
 #Other values
 PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
@@ -29,14 +42,14 @@ PORT = dynamixel.portHandler(device_name)                   # Initialize PortHan
 def init():
     dynamixel.packetHandler()                               # Initialize PacketHandler Structs
     if dynamixel.openPort(PORT):                            # Open port
-        print("Succeeded to open the port!")
+        logging.info("Succeeded to open the port!")
     else:
-        print("Failed to open the port!")
+        logging.error("Failed to open the port!")
         quit()
     if dynamixel.setBaudRate(PORT, BAUDRATE):               # Set port baudrate
-        print("Succeeded to set the baudrate!")
+        logging.info("Succeeded to set the baudrate!")
     else:
-        print("Failed to change the baudrate!")
+        logging.error("Failed to change the baudrate!")
         quit()
 
 def comm_error():
@@ -63,11 +76,35 @@ def read_position(ID):
     if not comm_error():
         return position
 
+def read_load(ID):
+    load = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_PRESENT_LOAD)
+    if not comm_error():
+        return load
+
 def set_goal(ID, goal):
     dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_GOAL_POSITION, goal)
     if not comm_error():
         return 1
     return 0
+
+# def enable_torque_mode(ID):
+#     dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID + 1, ADDR_TORQUE_MODE, 1)
+#     if not comm_error():
+#         return 1
+#     return 0
+#
+# def disable_torque_mode(ID):
+#     dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID + 1, ADDR_TORQUE_MODE, 0)
+#     if not comm_error():
+#         return 1
+#     return 0
+#
+# def set_goal_torque(ID, goal_torque):
+#     dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_GOAL_TORQUE, goal_torque)
+#     if not comm_error():
+#         return 1
+#     return 0
+
 
 def set_I(ID, I):
     dynamixel.write1ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_I, I)
@@ -118,6 +155,12 @@ def read_max_torque(ID):
     torque = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_TORQUE)
     if not comm_error():
         return torque
+
+def set_max_torque(ID, torque):
+    dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_GOAL_TORQUE, torque)
+    if not comm_error():
+        return 1
+    return 0
 
 def change_baudrate(ID, baudrate_level):
     dynamixel.write2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_BAUDRATE, baudrate_level)

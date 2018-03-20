@@ -1,10 +1,11 @@
 import pyperplan
 import string
-import world_state
+import logging
+logging = logging.getLogger(__name__)
 
 heuristic = "hff"
 search = "astar"
-problem = "manip_blocktask/task03.pddl"
+problem = "Planning_tasks/blocks_and_doors/task03.pddl"
 
 def split_text(name):
 
@@ -13,15 +14,16 @@ def split_text(name):
 
     return name.split()
 
+def start_plan():
+    solution = pyperplan.create_plan(heuristic, search, problem)
 
+    if solution is None:
+        logging.warning("No plan was found")
+        return None
 
-solution = pyperplan.create_plan(heuristic, search, problem)
+    for step in solution:
+        step_name = step.name
+        step.name = split_text(step_name)
 
-op1_name = solution[0].name
-
-op1 = split_text(op1_name)
-
-if op1[0] == "move":
-    next_coord = world_state.get_coordinates(op1[2])
-
-    print(next_coord.r, next_coord.theta, next_coord.z)
+    logging.debug(solution)
+    return solution

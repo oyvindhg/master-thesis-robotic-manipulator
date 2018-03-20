@@ -1,8 +1,11 @@
 import driver
+import logging
+logging = logging.getLogger(__name__)
 
 NUM_MOTORS = 7
 active_motors = [0 for ID in range(NUM_MOTORS)]
 goal_position = [0 for ID in range(NUM_MOTORS)]
+goal_torque = [0 for ID in range(NUM_MOTORS)]
 initial_position = [0 for ID in range(NUM_MOTORS)]
 conv_unit = 0.088
 
@@ -23,12 +26,12 @@ def change_baudrate(ID, baudrate_level):            # Find baudrate levels in da
 
 def activate(ID):                                   # Enable torque
     if active_motors[ID] == 1:
-        print('Motor already activated')
+        logging.info('Motor already activated')
         return 0
     else:
         status = driver.activate(ID)
         if status == 1:
-            print("Dynamixel motor [ID:%d] has been successfully connected" % ID)
+            logging.info("Dynamixel motor [ID:%d] has been successfully connected", ID)
             active_motors[ID] = 1
         return status
 
@@ -40,7 +43,7 @@ def activate_all():
 
 def deactivate(ID):                                   # Disable torque
     if active_motors[ID] == 0:
-        print('Motor already inactive')
+        logging.info('Motor already inactive')
         return 0
     else:
         status = driver.deactivate(ID)
@@ -60,22 +63,33 @@ def read_offset(ID):
 def set_offset(ID, offset):
     return driver.set_offset(ID, offset)
 
-def read_CCW_limit(ID):                     #Default 4095 for BASE
+def read_CCW_limit(ID):
     return driver.read_CCW_limit(ID)
 
 def set_CCW_limit(ID, ccw):
-    print('CCW limit for [ID:%d] set to %d' % (ID, ccw))
+    logging.info('CCW limit for [ID:%d] set to %d', ID, ccw)
     return driver.set_CCW_limit(ID, ccw)
 
-def read_CW_limit(ID):                     #Default 0 for BASE
+def read_CW_limit(ID):
     return driver.read_CW_limit(ID)
 
 def set_CW_limit(ID, cw):
-    print('CW limit for [ID:%d] set to %d' % (ID, cw))
+    logging.info('CW limit for [ID:%d] set to %d', ID, cw)
     return driver.set_CW_limit(ID, cw)
 
+def set_mode(ID, mode):
+    if mode == "wheel":
+        set_CW_limit(ID, 0)
+        set_CCW_limit(ID, 0)
+    elif mode == "joint":
+        set_CW_limit(ID, 0)
+        if ID == 0:
+            set_CCW_limit(ID, 4095)                      #Default 4095 for BASE
+        elif ID == 5 or 6:
+            set_CCW_limit(ID, 1023)                      #Default 1023 for LG and RG
+
 def set_I(ID, I):
-    print('Integral for [ID:%d] set to %d' % (ID, I))
+    logging.info('Integral for [ID:%d] set to %d', ID, I)
     return driver.set_I(ID, I)
 
 def set_I_all(I):
@@ -85,7 +99,7 @@ def set_I_all(I):
     return 1
 
 def set_max_vel(ID, max_vel):
-    print('Max velocity of [ID:%d] set to %d RPM' % (ID, max_vel*0.114))
+    logging.info('Max velocity of [ID:%d] set to %d RPM', ID, max_vel*0.114)
     return driver.set_max_vel(ID, max_vel)
 
 def set_max_vel_arm(max_vel):
@@ -97,15 +111,28 @@ def set_max_vel_arm(max_vel):
 
 def read_positions():
     positions = []
-    for ID in (range(NUM_MOTORS)):
+    for ID in (range(7)):
         pos = driver.read_position(ID)
+        if pos == None:
+            logging.info("fault in motor %d, could not read!", ID)
         if pos > 32767:
             pos = (65535 - pos) * (-1)      #Converting two bytes from unsigned to signed
         pos = unit_to_deg(pos)
         positions.append(pos)
     return positions
 
-def set_goal(ID, goal):                     #DO NOT USE THIS YET UNLESS YOU KNOW WHAT YOU DO
+def read_loads():
+    loads = []
+    for ID in (range(7)):
+        load = driver.read_load(ID)
+        if load == None:
+            logging.info("fault in motor %d, could not read!", ID)
+        elif load >= 1024:
+            load = load - 1024
+        loads.append(load)
+    return loads
+
+def set_goal(ID, goal):
     if active_motors[ID] == 1:
         unit_goal = int(deg_to_unit(goal))
         status = driver.set_goal(ID, unit_goal)
@@ -113,13 +140,12 @@ def set_goal(ID, goal):                     #DO NOT USE THIS YET UNLESS YOU KNOW
             goal_position[ID] = goal
         return status
     else:
-        print('Motor is not activated')
+        logging.warning('Motor %d is not activated', ID)
         return 0
 
 def set_goals(goals):
     for ID, goal in enumerate(goals):
         set_goal(ID, goal)
-
 
 def get_goal():
     goal_ret = []
@@ -136,19 +162,81 @@ def set_rel_goals(delta_pos):
         set_goal(ID, rel_goal + initial_position[ID])
         #goal_position[ID] = rel_goal + initial_position[ID]
 
-def reached_goal(moving_thresh):
+def reached_goal(moving_thresh, torque_thresh):
     max_dist = 0
+    max_torque_dist = 0
     positions = read_positions()
+    torques = read_loads()
     for ID, pos in enumerate(positions):
-        new_dist = abs(pos - goal_position[ID])
-        if new_dist > max_dist:
-            max_dist = new_dist
-    if max_dist < moving_thresh:
+        if goal_torque[ID] == 0:
+            new_dist = abs(pos - goal_position[ID])
+            if new_dist > max_dist:
+                max_dist = new_dist
+        else:
+            new_torque_dist = abs(torques[ID] - goal_torque[ID])
+            if new_torque_dist > max_torque_dist:
+                max_torque_dist = new_torque_dist
+    if max_dist < moving_thresh and max_torque_dist < torque_thresh:
         return 1
     return 0
 
+def read_max_torque(ID):
+    return driver.read_max_torque(ID)
+
+def set_max_torque(ID, torque):
+    if active_motors[ID] == 1:
+        logging.info('Torque limit for [ID:%d] set to %d', ID, torque)
+        status = driver.set_max_torque(ID, torque)
+        if status == 1:
+            goal_torque[ID] = torque
+        return status
+    else:
+        logging.warning('Motor %d is not activated', ID)
+        return 0
+
+def get_max_torque():
+    torque_ret = []
+    for part_t in goal_torque:
+        torque_ret.append(part_t)
+    return torque_ret
 
 def turn_off():
     for ID in range(NUM_MOTORS):
         deactivate(ID)
     driver.close_port()
+
+
+
+# def enable_torque_mode(ID):
+#     logging.info('Enabled torque mode')
+#     return driver.enable_torque_mode(ID)
+#
+# def disable_torque_mode(ID):
+#     logging.info('Disabled torque mode')
+#     return driver.disable_torque_mode(ID)
+#
+# def set_goal_torque(ID, dir, torque):
+#     if active_motors[ID] == 1:
+#         if dir == "CCW":
+#             status = driver.set_goal_torque(ID, torque)
+#         else:
+#             status = driver.set_goal_torque(ID, torque + 1024)
+#         if status == 1:
+#             goal_torque[ID] = torque
+#         return status
+#     else:
+#         logging.warning('Motor %d is not activated', ID)
+#         return 0
+#
+# def get_torque_goal():
+#     torque_ret = []
+#     for part_t in goal_torque:
+#         torque_ret.append(part_t)
+#     return torque_ret
+#
+# def reached_torque(ID, torque_thresh):
+#     loads = read_loads()
+#     dist = abs(loads[ID] - goal_torque[ID])
+#     if dist < torque_thresh:
+#         return 1
+#     return 0

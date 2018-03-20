@@ -6,6 +6,8 @@ import subprocess
 import time
 from operator import attrgetter
 
+logging = logging.getLogger(__name__)
+
 cwd = os.getcwd()
 os.sys.path.append(cwd + '/Pyperplan')             # Path setting
 
@@ -33,6 +35,9 @@ SEARCHES = {
 # HEURISTICS: {lmcut,landmark,hadd,hff,hmax,hsa,blind}
 
 # LOG LEVELS: ['debug', 'info', 'warning', 'error']
+
+#log_level = "info"
+#logging.basicConfig(level=getattr(logging, log_level.upper()), format='%(asctime)s %(levelname)-8s %(message)s', stream=sys.stdout)
 
 NUMBER = re.compile(r'\d+')
 
@@ -186,12 +191,6 @@ def validate_solution(domain_file, problem_file, solution_file):
 
 def create_plan(heuristic, search, problem):
 
-    log_level = "info"
-
-    logging.basicConfig(level=getattr(logging, log_level.upper()),
-                        format='%(asctime)s %(levelname)-8s %(message)s',
-                        stream=sys.stdout)
-
     problem = os.path.abspath(problem)
 
     domain = find_domain(problem)
@@ -211,6 +210,5 @@ def create_plan(heuristic, search, problem):
     if solution is None:
         logging.warning('No solution could be found')
     else:
-        solution_file = problem + '.soln'
         logging.info('Plan length: %s' % len(solution))
         return solution
