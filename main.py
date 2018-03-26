@@ -7,33 +7,28 @@ import planner
 import sys
 import logging
 
-log_level = "debug"
+log_level = "info"
 logging.basicConfig(level=getattr(logging, log_level.upper()), format='%(name)-20s %(levelname)-20s %(message)s', stream=sys.stdout)
 logging = logging.getLogger(__name__)
 
 
 motor.init()
+
+display.current_status()
+
 controller.init()
-
-
-motor.set_max_torque(6, 40)
-motor.set_max_torque(5, 40)
-
-controller.close_grippers()
-
-while 1:
-    display.current_load_status()
-    if motor.reached_goal(1, 5):
-        break
-
+display.current_status()
 
 display.press_key()
 if keyboard.press_ESC():
     controller.read_only()
 
 
-controller.turn_off("return")
+controller.set_position(40, 0, 10)
 
+controller.set_position(40, 90, 10)
+
+controller.set_position(40, -30, 10)
 quit()
 
 plan = planner.start_plan()
@@ -55,7 +50,7 @@ if plan is not None:
             loc_name = operation[2]
             loc = perception.get_coordinates(loc_name)
             controller.set_position(loc.r, loc.theta, loc.z)
-            controller.set_position(loc.r, loc.theta, loc.z-2)
+            controller.set_position(loc.r, loc.theta, loc.z-10)
             controller.close_grippers(wait=1)
             controller.set_position(loc.r, loc.theta, loc.z)
 
@@ -63,10 +58,10 @@ if plan is not None:
             loc_name = operation[2]
             loc = perception.get_coordinates(loc_name)
             controller.set_position(loc.r, loc.theta, loc.z)
-            controller.set_position(loc.r, loc.theta, loc.z-2)
+            controller.set_position(loc.r, loc.theta, loc.z-10)
             controller.open_grippers(wait=1)
             controller.set_position(loc.r, loc.theta, loc.z)
 
 
-controller.turn_off()
+controller.turn_off("return")
 

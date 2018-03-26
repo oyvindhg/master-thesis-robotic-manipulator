@@ -163,22 +163,24 @@ def set_rel_goals(delta_pos):
         #goal_position[ID] = rel_goal + initial_position[ID]
 
 def reached_goal(moving_thresh, torque_thresh):
-    max_dist = 0
-    max_torque_dist = 0
+
     positions = read_positions()
     torques = read_loads()
     for ID, pos in enumerate(positions):
-        if goal_torque[ID] == 0:
-            new_dist = abs(pos - goal_position[ID])
-            if new_dist > max_dist:
-                max_dist = new_dist
-        else:
+
+        torque_ok = 0
+
+        if goal_torque[ID] is not 0:
             new_torque_dist = abs(torques[ID] - goal_torque[ID])
-            if new_torque_dist > max_torque_dist:
-                max_torque_dist = new_torque_dist
-    if max_dist < moving_thresh and max_torque_dist < torque_thresh:
-        return 1
-    return 0
+            logging.debug("Torque difference on ID %d: %d", ID, new_torque_dist)
+            if new_torque_dist <= torque_thresh:
+                torque_ok = 1
+
+        new_dist = abs(pos - goal_position[ID])
+        logging.debug("Distance difference on ID %d: %d", ID, new_dist)
+        if new_dist > moving_thresh and not torque_ok:
+            return 0
+    return 1
 
 def read_max_torque(ID):
     return driver.read_max_torque(ID)
