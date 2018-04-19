@@ -16,6 +16,8 @@ NUM_MOTORS = 7
 gripper_midpoint = 45
 gripper_closed_distance = 19
 
+safe_height = 30
+
 moving_threshold = 1
 torque_threshold = 1
 
@@ -77,18 +79,33 @@ def set_position(r, theta, z, wait=1, show=0):
     if wait:
         finish_task(show)
 
+def go_to(r, theta, z, wait=1, show=0):
+
+    current_joints = motor.read_positions()
+
+    current_pos = kinematics.get_current_position(current_joints)
+    height = max(current_pos[2], safe_height)
+
+    set_position(current_pos[0], current_pos[1], height)
+
+    height = max(z, safe_height)
+    set_position(r, theta, height)
+
+    set_position(r, theta, z)
+
+
 def cooldown(location):
     if location == "return":
         motor.set_max_vel_arm(20)
         motor.set_rel_goals(0 for ID in range(NUM_MOTORS))
     else:
-        r = 50
+        r = 20
         theta = 0
-        z = 3
-        set_head(0)
-        set_position(r, theta, z, wait=1)
+        z = 15
+        go_to(r, theta, z, wait=1)
         motor.set_max_vel_arm(20)
-        set_position(r, theta, z-3)
+        close_grippers(wait=1)
+        set_position(r, theta, z-7, wait=1)
     finish_task()
 
 def turn_off(location="absolute"):

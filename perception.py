@@ -12,8 +12,8 @@ class Position:
 pos_map = {}
 
 pos_map['l1'] = Position(50, 1, 15)
-pos_map['l2'] = Position(30, -30, 20)
-pos_map['l3'] = Position(30, 30, 20)
+pos_map['l2'] = Position(30, -30, 25)
+pos_map['l3'] = Position(30, 20, 25)
 
 
 def get_coordinates(location):

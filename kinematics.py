@@ -32,6 +32,11 @@ def cartesian(r, theta, z):
     y = r*math.sin(math.radians(theta))
     return [x,y,z]
 
+def polar(x,y,z):
+    r = math.sqrt(math.pow(x,2) + math.pow(y,2))
+    theta = math.atan2(y,x)
+    return [r, theta, z]
+
 def rotation_m(x, y, z):
 
     z = math.radians(z)
@@ -48,15 +53,27 @@ def rotation_m(x, y, z):
 
     return rot_matrix
 
+def get_current_position(current_joint_deg):
 
-def position_planner(cylinder_target, current_joint_deg, show_plan=False):
+    current_model = [0 for i in range(7)]
+    for ID, deg in enumerate(current_joint_deg):
+        if ID <= 4:
+            current_model[ID + 1] = joint_to_model_frame(ID, deg)
+
+    x,y,z = my_chain.forward_kinematics(current_model)[:3,3]
+
+    r, theta, z = polar(x,y,z)
+
+    theta = math.degrees(theta)
+
+    return [r, theta, z]
+
+def position_planner(cylinder_target, current_joint_deg, attack_rot = 90, head_rot=0, show_plan=False):
 
     r, theta, z = cylinder_target
     target = cartesian(r, theta, z)
 
     base_rot = theta
-    attack_rot = 90
-    head_rot = -60
 
     rot_matrix = rotation_m(head_rot, attack_rot, base_rot)
 
@@ -84,12 +101,12 @@ def position_planner(cylinder_target, current_joint_deg, show_plan=False):
     # target_frame[1, 0] = -1.0
     # target_frame[1, 1] = 0.0
 
-    print(current_model)
+    #print(current_model)
 
     target_frame[:3, 3] = target
 
 
-    print(target_frame)
+    #print(target_frame)
 
 
     model_rad = my_chain.inverse_kinematics(target_frame, initial_position=current_model)
@@ -102,8 +119,8 @@ def position_planner(cylinder_target, current_joint_deg, show_plan=False):
         if ID >= 0 and ID <= 4:
             next_joint_deg.append(model_to_joint_frame(ID, rad))
 
-    real_frame = my_chain.forward_kinematics(my_chain.inverse_kinematics(target_frame))
-    print("Computed position matrix : %s, original position matrix : %s" % (real_frame, target_frame))
+    # real_frame = my_chain.forward_kinematics(my_chain.inverse_kinematics(target_frame))
+    # print("Computed position matrix : %s, original position matrix : %s" % (real_frame, target_frame))
 
 
     check_sol = next_joint_deg[1] - 180 + next_joint_deg[2] - 180 + next_joint_deg[3] - 180

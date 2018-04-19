@@ -12,7 +12,7 @@ logging = logging.getLogger(__name__)
 #################################################################################
 
 #Name of connected USB device
-device_name = "/dev/ttyUSB0".encode('utf-8')
+device_name = "/dev/ttyUSB1".encode('utf-8')
 
 # Control table address
 ADDR_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
