@@ -5,6 +5,7 @@ import numpy as np
 from plan_plot import plot_plan
 import math
 import logging
+from coordinate_maths import cartesian, polar, rotation_m
 
 logging = logging.getLogger(__name__)
 
@@ -27,31 +28,6 @@ def model_to_joint_frame(ID, model_rad):
     logging.debug('Joint %d: %d', ID, joint_deg)
     return joint_deg
 
-def cartesian(r, theta, z):
-    x = r*math.cos(math.radians(theta))
-    y = r*math.sin(math.radians(theta))
-    return [x,y,z]
-
-def polar(x,y,z):
-    r = math.sqrt(math.pow(x,2) + math.pow(y,2))
-    theta = math.atan2(y,x)
-    return [r, theta, z]
-
-def rotation_m(x, y, z):
-
-    z = math.radians(z)
-    y = math.radians(y)
-    x = math.radians(x)
-
-    base_z = np.array([[math.cos(z), -math.sin(z), 0], [math.sin(z), math.cos(z), 0], [0, 0, 1]])
-
-    attack_y = np.array([[math.cos(y), 0, math.sin(y)], [0, 1, 0], [-math.sin(y), 0, math.cos(y)]])
-
-    head_x = np.array([[1, 0, 0], [0, math.cos(x), -math.sin(x)], [0, math.sin(x), math.cos(x)]])
-
-    rot_matrix = np.dot(np.dot(base_z, attack_y), head_x)
-
-    return rot_matrix
 
 def get_current_position(current_joint_deg):
 
@@ -63,8 +39,6 @@ def get_current_position(current_joint_deg):
     x,y,z = my_chain.forward_kinematics(current_model)[:3,3]
 
     r, theta, z = polar(x,y,z)
-
-    theta = math.degrees(theta)
 
     return [r, theta, z]
 

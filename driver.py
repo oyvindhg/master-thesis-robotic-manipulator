@@ -12,7 +12,9 @@ logging = logging.getLogger(__name__)
 #################################################################################
 
 #Name of connected USB device
-device_name = "/dev/ttyUSB1".encode('utf-8')
+device_name = "/dev/ttyUSB0".encode('utf-8')
+PORT = dynamixel.portHandler(device_name)                   # Initialize PortHandler Structs, set the port path and
+                                                            # get methods and members of PortHandlerLinux or PortHandlerWindows
 
 # Control table address
 ADDR_TORQUE_ENABLE       = 24                            # Control table address is different in Dynamixel model
@@ -35,8 +37,6 @@ TORQUE_ENABLE               = 1                             # Value for enabling
 TORQUE_DISABLE              = 0                             # Value for disabling the torque
 COMM_SUCCESS                = 0                             # Communication Success result value
 COMM_TX_FAIL                = -1001                         # Communication Tx Failed
-PORT = dynamixel.portHandler(device_name)                   # Initialize PortHandler Structs, set the port path and
-                                                            # get methods and members of PortHandlerLinux or PortHandlerWindows
 
 
 def init():

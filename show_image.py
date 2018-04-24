@@ -1,22 +1,22 @@
 
 import cv2
 from matplotlib import pyplot as plt
-import random
+import hashlib
 
 def int_to_color(number):
     """Convert an integer into one of several pre-defined colors."""
 
     switcher = {
-        0: 'crimson',
+        0: 'dodgerblue',
         1: 'deeppink',
-        2: 'dodgerblue',
+        2: 'navy',
         3: 'lawngreen',
-        4: 'navy',
-        5: 'gold',
-        6: 'darksalmon',
+        4: 'crimson',
+        5: 'darksalmon',
+        6: 'orange',
         7: 'violet',
         8: 'teal',
-        9: 'orange'
+        9: 'gold'
     }
 
     return switcher.get(number % len(switcher), "crimson")
@@ -24,13 +24,19 @@ def int_to_color(number):
 
 def show_labeled(im, boxes):
 
+
     if not boxes:
         return
 
     fig, ax = plt.subplots()
     for box in boxes:  # Iterate through the detected objects
 
-        color = int_to_color(random.randint(0, 9))  # To get some pleasurable graphical variation
+        hasher = hashlib.sha1()
+        hasher.update(box[0])
+        color_int = int(hasher.hexdigest(), 16) % 10
+
+        color = int_to_color(color_int)  # To get some pleasurable graphical variation
+
 
 
         label = box[0].decode("utf-8")

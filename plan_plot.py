@@ -32,7 +32,7 @@ def plot_plan(chain, model_rad, target_vector, equal_aspect = False):
     chain.plot(model_rad, ax, target=target_vector)
     plt.xlim(-40, 40)
     plt.ylim(-40, 40)
-    ax.set_zlim(-5, 30)
+    ax.set_zlim(0, 30)
 
     if equal_aspect:
         set_aspect_equal_3d(ax)
