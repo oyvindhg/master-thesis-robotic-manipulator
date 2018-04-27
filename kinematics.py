@@ -13,8 +13,11 @@ BASE_MODEL = 315
 LARM_MODEL = 270
 MARM_MODEL = 180
 UARM_MODEL = 180
+PRE_WRIST = 0
 WRIST_MODEL = 180
-model = [BASE_MODEL, LARM_MODEL, MARM_MODEL, UARM_MODEL, WRIST_MODEL]
+model = [BASE_MODEL, LARM_MODEL, MARM_MODEL, UARM_MODEL, PRE_WRIST, WRIST_MODEL]
+
+NUM_JOINTS = 8
 
 my_chain = ikpy.chain.Chain.from_urdf_file("URDF/dynamixel.URDF")
 
@@ -31,10 +34,12 @@ def model_to_joint_frame(ID, model_rad):
 
 def get_current_position(current_joint_deg):
 
-    current_model = [0 for i in range(7)]
+    current_model = [0 for i in range(NUM_JOINTS+1)]
     for ID, deg in enumerate(current_joint_deg):
-        if ID <= 4:
+        if ID < 4:
             current_model[ID + 1] = joint_to_model_frame(ID, deg)
+        elif ID == 4:
+            current_model[ID + 2] = joint_to_model_frame(ID, deg)
 
     x,y,z = my_chain.forward_kinematics(current_model)[:3,3]
 
@@ -42,19 +47,20 @@ def get_current_position(current_joint_deg):
 
     return [r, theta, z]
 
-def position_planner(cylinder_target, current_joint_deg, attack_rot = 90, head_rot=0, show_plan=False):
+def position_planner(cylinder_target, current_joint_deg, attack_rot = 90, head_rot = 0, show_plan=False):
 
     r, theta, z = cylinder_target
     target = cartesian(r, theta, z)
-
     base_rot = theta
 
     rot_matrix = rotation_m(head_rot, attack_rot, base_rot)
 
-    current_model=[0 for i in range(7)]
+    current_model=[0 for i in range(NUM_JOINTS+1)]
     for ID, deg in enumerate(current_joint_deg):
-        if ID <= 4:
-            current_model[ID+1] = joint_to_model_frame(ID, deg)
+        if ID < 4:
+            current_model[ID + 1] = joint_to_model_frame(ID, deg)
+        elif ID == 4:
+            current_model[ID + 2] = joint_to_model_frame(ID, deg)
 
     target_frame = np.eye(4)
 
@@ -90,7 +96,9 @@ def position_planner(cylinder_target, current_joint_deg, attack_rot = 90, head_r
     next_joint_deg = []
     for id, rad in enumerate(model_rad):
         ID = id - 1
-        if ID >= 0 and ID <= 4:
+        if ID >= 0 and ID < 4:
+            next_joint_deg.append(model_to_joint_frame(ID, rad))
+        elif ID == 5:
             next_joint_deg.append(model_to_joint_frame(ID, rad))
 
     # real_frame = my_chain.forward_kinematics(my_chain.inverse_kinematics(target_frame))
@@ -98,14 +106,14 @@ def position_planner(cylinder_target, current_joint_deg, attack_rot = 90, head_r
 
 
     check_sol = next_joint_deg[1] - 180 + next_joint_deg[2] - 180 + next_joint_deg[3] - 180
-    if abs(check_sol) > 180:
+    if abs(check_sol) > 190:
         logging.warning("The robot is bending through itself")
         plot_plan(my_chain, model_rad, target)
         return False
 
 
-    logging.info("The angles of each joints in joint ref are: {0}".format(next_joint_deg))
-    plot_plan(my_chain, model_rad, target)
+    # logging.info("The angles of each joints in joint ref are: {0}".format(next_joint_deg))
+    # plot_plan(my_chain, model_rad, target)
 
     if show_plan:
         logging.info("The angles of each joints in joint ref are: {0}".format(next_joint_deg))

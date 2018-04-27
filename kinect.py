@@ -6,6 +6,8 @@ from show_image import show_labeled
 import cv2
 from coordinate_maths import polar, rotation_m
 from create_3D_model import plot_3d
+import statistics
+import math
 # import logging
 # logging = logging.getLogger(__name__)
 
@@ -20,8 +22,8 @@ depth_y = 480
 depth_x = 640
 
 kinect_z = 5
-kinect_y = -66
-kinect_x = 45
+kinect_y = -85
+kinect_x = 35
 kinect_z_rot = 0
 kinect_y_rot = 0
 kinect_x_rot = -90
@@ -98,6 +100,11 @@ def object_depth_cm(obj_image, depth_image):
     x_tot = 0
     y_tot = 0
     z_tot = 0
+
+    x_arr = []
+    y_arr = []
+    z_arr = []
+
     i = 0
     for py in range(0,depth_y):
         for px in range(0,depth_x):
@@ -109,11 +116,20 @@ def object_depth_cm(obj_image, depth_image):
                 y_tot += y
                 z_tot += z
 
+                x_arr.append(x)
+                y_arr.append(y)
+                z_arr.append(z)
+
     x_avg = x_tot/(i* 10 + 1e-10)
     y_avg = y_tot/(i* 10 + 1e-10)
     z_avg = z_tot/(i* 10 + 1e-10)
 
-    return x_avg, y_avg, z_avg
+    x_med = statistics.median(x_arr) / 10
+    y_med = statistics.median(y_arr) / 10
+    z_med = statistics.median(z_arr) / 10
+
+
+    return x_med, y_med, z_med
 
 def make_3d():
 
@@ -137,7 +153,7 @@ def find_objects(show = 0, save = 0):
     # #waste = get_depth()
     # d = np.load("depth.npy")
 
-    boxes = darknet.detect(net, meta, im, thresh=0.05)
+    boxes = darknet.detect(net, meta, im, thresh=0.3)
 
     print(boxes)
 
@@ -172,7 +188,16 @@ def find_objects(show = 0, save = 0):
 
 
         x, y, z = object_depth_cm(im_o, d)
-        print("Pos:", x, y, z)
+
+        length = math.sqrt(pow(x,2) + pow(y,2) + pow(z,2))
+
+        print(o[0], " before :", x, y, z)
+
+        x = x + 3.5 * x / length
+        y = y + 3.5 * y / length
+        z = z
+
+        print(o[0], " after :", x, y, z)
 
         pos = np.array([x, y, z, 1])
         o_world_frame = np.dot(kinect_tf, pos)

@@ -1,7 +1,9 @@
 import kinect
 
+
 kinect.init()
 
-kinect.find_objects(show = 1)
+o = kinect.find_objects(show = 1)
 
 
+print(o)

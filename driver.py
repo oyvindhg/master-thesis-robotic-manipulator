@@ -29,6 +29,7 @@ ADDR_VEL                 = 32
 CCW_LIMIT                =  8
 CW_LIMIT                 =  6
 ADDR_GOAL_TORQUE         = 34
+ADDR_ERROR               = 18
 
 #Other values
 PROTOCOL_VERSION            = 1                             # See which protocol version is used in the Dynamixel
@@ -70,6 +71,11 @@ def activate(ID):
     if not comm_error():
         return 1
     return 0
+
+def alarm_error(ID):
+    error = dynamixel.read1ByteTxRx(PORT, PROTOCOL_VERSION, ID + 1, ADDR_ERROR)
+    if not comm_error():
+        return error
 
 def read_position(ID):
     position = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_PRESENT_POSITION)

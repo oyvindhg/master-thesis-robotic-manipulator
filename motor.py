@@ -94,8 +94,9 @@ def set_I(ID, I):
 
 def set_I_all(I):
     for ID in (range(NUM_MOTORS)):
-        if not set_I(ID, I):
-            return 0
+        if ID <= 3:
+            if not set_I(ID, I):
+                return 0
     return 1
 
 def set_max_vel(ID, max_vel):
