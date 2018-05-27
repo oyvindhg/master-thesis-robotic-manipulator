@@ -7,7 +7,7 @@ class Position:
     z = 0
     def __init__(self, r, theta, z):
         self.r = r
-        self.theta = theta
+        self.theta = theta  
         self.z = z
 
 pos_map = {}
