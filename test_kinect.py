@@ -3,7 +3,10 @@ import kinect
 
 kinect.init()
 
-o = kinect.find_objects(show = 1)
+# kinect.take_images()
+
+while 1:
+    o = kinect.find_objects(show = 1)
 
 
 print(o)

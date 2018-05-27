@@ -27,3 +27,8 @@ def start_plan():
 
     logging.debug(solution)
     return solution
+
+
+def init_problem(obj):
+
+    for o in obj:

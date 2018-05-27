@@ -39,7 +39,6 @@ TORQUE_DISABLE              = 0                             # Value for disablin
 COMM_SUCCESS                = 0                             # Communication Success result value
 COMM_TX_FAIL                = -1001                         # Communication Tx Failed
 
-
 def init():
     dynamixel.packetHandler()                               # Initialize PacketHandler Structs
     if dynamixel.openPort(PORT):                            # Open port
@@ -79,11 +78,17 @@ def alarm_error(ID):
 
 def read_position(ID):
     position = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_PRESENT_POSITION)
+    # while comm_error():
+    #     position = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID + 1, ADDR_PRESENT_POSITION)
+    # return position
     if not comm_error():
         return position
 
 def read_load(ID):
     load = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID+1, ADDR_PRESENT_LOAD)
+    # while comm_error():
+    #     load = dynamixel.read2ByteTxRx(PORT, PROTOCOL_VERSION, ID + 1, ADDR_PRESENT_LOAD)
+    # return load
     if not comm_error():
         return load
 

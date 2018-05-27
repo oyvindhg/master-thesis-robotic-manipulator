@@ -27,7 +27,7 @@ def init():
     motor.set_max_vel_arm(40)
     motor.set_rel_goals([0 for ID in range(NUM_MOTORS)])  # Set the goal position of the robot to its current position
     set_head(0)
-    set_gripper_torque(40)
+    set_gripper_torque(30)
 
 def finish_task(show=0):
     while 1:
@@ -52,7 +52,7 @@ def open_grippers(wait=0, show=1):
     gripper(12, wait, show)
 
 def close_grippers(wait=0, show=1):
-    gripper(0, wait, show)
+    gripper(1, wait, show)
 
 def set_head(deg, wait=0, show=1):
     motor.set_goal(HEAD, deg + 180)
@@ -83,12 +83,12 @@ def go_to(r, theta, z, wait=1, show=0):
     current_pos = kinematics.get_current_position(current_joints)
     height = max(current_pos[2], safe_height)
 
-    set_position(current_pos[0], current_pos[1], height)
+    set_position(current_pos[0], current_pos[1], height, show=show)
 
     height = max(z, safe_height)
-    set_position(r, theta, height)
+    set_position(r, theta, height, show=show)
 
-    set_position(r, theta, z)
+    set_position(r, theta, z, show=show)
 
 
 def cooldown(location):

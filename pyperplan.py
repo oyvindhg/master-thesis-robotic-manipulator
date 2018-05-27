@@ -140,7 +140,7 @@ def _write_solution(solution, filename):
     assert solution is not None
     with open(filename, 'w') as file:
         for op in solution:
-            print(op.name, file=file)
+            print(op.action.name, file=file)
 
 
 def search_plan(domain_file, problem_file, search, heuristic_class,
@@ -211,4 +211,4 @@ def create_plan(heuristic, search, problem):
         logging.warning('No solution could be found')
     else:
         logging.info('Plan length: %s' % len(solution))
-        return solution
+    return solution

@@ -2,7 +2,7 @@ import motor
 import keyboard
 import display
 import controller
-import perception
+import plan_db
 import planner
 import sys
 import logging
@@ -59,12 +59,12 @@ if plan is not None:
 
         if op_name == "move":
             next_loc_name = operation[2]
-            next_loc = perception.get_coordinates(next_loc_name)
+            next_loc = plan_db.get_coordinates(next_loc_name)
             controller.go_to(next_loc.r, next_loc.theta, next_loc.z+10)
 
         elif op_name == "pickup":
             loc_name = operation[2]
-            loc = perception.get_coordinates(loc_name)
+            loc = plan_db.get_coordinates(loc_name)
             controller.open_grippers(wait=1)
             controller.set_position(loc.r, loc.theta, loc.z)
             controller.set_position(loc.r, loc.theta, loc.z)
@@ -73,7 +73,7 @@ if plan is not None:
 
         elif op_name == "place":
             loc_name = operation[2]
-            loc = perception.get_coordinates(loc_name)
+            loc = plan_db.get_coordinates(loc_name)
             controller.set_position(loc.r, loc.theta, loc.z)
             controller.set_position(loc.r, loc.theta, loc.z)
             controller.open_grippers(wait=1)

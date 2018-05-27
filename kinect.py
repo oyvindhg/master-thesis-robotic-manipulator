@@ -124,9 +124,13 @@ def object_depth_cm(obj_image, depth_image):
     y_avg = y_tot/(i* 10 + 1e-10)
     z_avg = z_tot/(i* 10 + 1e-10)
 
+    print("avg:", x_avg, y_avg, z_avg)
+
     x_med = statistics.median(x_arr) / 10
     y_med = statistics.median(y_arr) / 10
     z_med = statistics.median(z_arr) / 10
+
+    print("med:", x_med, y_med, z_med)
 
 
     return x_med, y_med, z_med
@@ -144,6 +148,14 @@ def make_3d():
 
     plot_3d(xyz, im_d)
 
+
+def take_images():
+    im = get_image()
+    d = get_depth()
+    show_depth(d)
+    show_image(im)
+    cv2.waitKey()
+
 def find_objects(show = 0, save = 0):
 
     im = get_image()
@@ -153,7 +165,7 @@ def find_objects(show = 0, save = 0):
     # #waste = get_depth()
     # d = np.load("depth.npy")
 
-    boxes = darknet.detect(net, meta, im, thresh=0.3)
+    boxes = darknet.detect(net, meta, im, thresh=0.1)
 
     print(boxes)
 
@@ -186,18 +198,17 @@ def find_objects(show = 0, save = 0):
                 imgname = o[0].decode() + ".png"
                 cv2.imwrite(imgname, im_o)
 
-
         x, y, z = object_depth_cm(im_o, d)
 
         length = math.sqrt(pow(x,2) + pow(y,2) + pow(z,2))
 
-        print(o[0], " before :", x, y, z)
+        # print(o[0], " before :", x, y, z)
 
         x = x + 3.5 * x / length
         y = y + 3.5 * y / length
         z = z
 
-        print(o[0], " after :", x, y, z)
+        # print(o[0], " after :", x, y, z)
 
         pos = np.array([x, y, z, 1])
         o_world_frame = np.dot(kinect_tf, pos)
