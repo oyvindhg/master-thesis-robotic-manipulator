@@ -1,5 +1,6 @@
 import pyperplan
 import string
+import plan_db
 import logging
 logging = logging.getLogger(__name__)
 
@@ -29,6 +30,51 @@ def start_plan():
     return solution
 
 
-def init_problem(obj):
+def update_problem(obj_list):
+    if not plan_db.objects_match(obj_list):
+        extra_obj = plan_db.get_invisible()
 
-    for o in obj:
+        for obj in extra_obj:
+            obj_list.append(obj)
+
+        obj_list = plan_db.update_objects(obj_list)
+
+        plan_db.update_plan_init()
+        plan_db.update_plan_goal()
+
+obj_list = []
+
+o_pos = {}
+o_pos['name'] = 'apple'
+o_pos['r'] = 20
+o_pos['theta'] = 10
+o_pos['z'] = 10
+
+obj_list.append(o_pos)
+
+o_pos = {}
+o_pos['name'] = 'apple'
+o_pos['r'] = 20
+o_pos['theta'] = 10
+o_pos['z'] = 8
+
+obj_list.append(o_pos)
+
+o_pos = {}
+o_pos['name'] = 'banana'
+o_pos['r'] = 20
+o_pos['theta'] = 10
+o_pos['z'] = 14
+
+obj_list.append(o_pos)
+
+o_pos = {}
+o_pos['name'] = 'bowl'
+o_pos['r'] = 20
+o_pos['theta'] = 10
+o_pos['z'] = 5
+
+obj_list.append(o_pos)
+
+
+update_problem(obj_list)
