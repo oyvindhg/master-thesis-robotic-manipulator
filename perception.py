@@ -120,17 +120,19 @@ def object_depth_cm(obj_image, depth_image):
                 y_arr.append(y)
                 z_arr.append(z)
 
-    x_avg = x_tot/(i* 10 + 1e-10)
-    y_avg = y_tot/(i* 10 + 1e-10)
-    z_avg = z_tot/(i* 10 + 1e-10)
+    # x_avg = x_tot/(i* 10 + 1e-10)
+    # y_avg = y_tot/(i* 10 + 1e-10)
+    # z_avg = z_tot/(i* 10 + 1e-10)
+    #
+    # print("avg:", x_avg, y_avg, z_avg)
 
-    print("avg:", x_avg, y_avg, z_avg)
+    if x_arr is not []:
+        x_med = statistics.median(x_arr) / 10
+        y_med = statistics.median(y_arr) / 10
+        z_med = statistics.median(z_arr) / 10
+    else: x_med = y_med = z_med = 0
 
-    x_med = statistics.median(x_arr) / 10
-    y_med = statistics.median(y_arr) / 10
-    z_med = statistics.median(z_arr) / 10
-
-    print("med:", x_med, y_med, z_med)
+    # print("med:", x_med, y_med, z_med)
 
 
     return x_med, y_med, z_med
@@ -156,7 +158,81 @@ def take_images():
     show_image(im)
     cv2.waitKey()
 
-def find_objects(show = 0, save = 0):
+def find_objects(objects, i, show = 0, save = 0):
+
+
+    ############NOOOOOOOOOOOOOOOOOOO
+
+    # obj_list = []
+    #
+    # o_pos = {}
+    # o_pos['name'] = 'apple'
+    # o_pos['r'] = 20
+    # o_pos['theta'] = 10
+    # o_pos['z'] = 10
+    # o_pos['visible'] = 1
+    #
+    # if i >= 2:
+    #     o_pos['r'] = 30
+    #     o_pos['z'] = 14
+    #
+    # if i >= 6:
+    #     o_pos['r'] = 20
+    #     o_pos['theta'] = 10
+    #     o_pos['z'] = 5 + i
+    # obj_list.append(o_pos)
+    #
+    # o_pos = {}
+    # o_pos['name'] = 'apple'
+    # o_pos['r'] = 20
+    # o_pos['theta'] = 10
+    # o_pos['z'] = 8
+    # o_pos['visible'] = 1
+    # # if i >= 3:
+    # #     o_pos['r'] = 30
+    # #     o_pos['z'] = 14
+    #
+    # if i >= 5:
+    #     o_pos['r'] = 20
+    #     o_pos['theta'] = 10
+    #     o_pos['z'] = 5 + i
+    #
+    # obj_list.append(o_pos)
+    #
+    # o_pos = {}
+    # o_pos['name'] = 'banana'
+    # o_pos['r'] = 20
+    # if i >= 1:
+    #     o_pos['r'] = 30
+    # o_pos['theta'] = 10
+    # o_pos['z'] = 14
+    # o_pos['visible'] = 1
+    #
+    # if i >= 4:
+    #     o_pos['r'] = 20
+    #     o_pos['theta'] = 10
+    #     o_pos['z'] = 5 + i
+    #
+    # obj_list.append(o_pos)
+    #
+    # o_pos = {}
+    # o_pos['name'] = 'bowl'
+    # o_pos['r'] = 20
+    # o_pos['theta'] = 10
+    # o_pos['z'] = 5
+    # o_pos['visible'] = 1
+    #
+    # obj_list.append(o_pos)
+    #
+    #
+    # return obj_list
+
+
+
+    ##################################
+
+
+
 
     im = get_image()
     d = get_depth()
@@ -165,7 +241,7 @@ def find_objects(show = 0, save = 0):
     # #waste = get_depth()
     # d = np.load("depth.npy")
 
-    boxes = darknet.detect(net, meta, im, thresh=0.1)
+    boxes = darknet.detect(net, meta, im, thresh=0.15)
 
     print(boxes)
 
@@ -185,10 +261,13 @@ def find_objects(show = 0, save = 0):
             cv2.imwrite("color_to_depth.png", im_d)
 
 
-
     obj = []
 
     for o in boxes:
+
+        if o[0].decode() not in objects:
+            print(o[0].decode(), "not in objects")
+            continue
 
         im_o = isolate_object(im, d, o)
         if show:
@@ -199,6 +278,9 @@ def find_objects(show = 0, save = 0):
                 cv2.imwrite(imgname, im_o)
 
         x, y, z = object_depth_cm(im_o, d)
+        if x == y == z == 0:
+            print(o[0].decode(), "at 0 0 0")
+            continue
 
         length = math.sqrt(pow(x,2) + pow(y,2) + pow(z,2))
 
@@ -216,10 +298,19 @@ def find_objects(show = 0, save = 0):
         o_polar = polar(o_world_frame[0], o_world_frame[1], o_world_frame[2])
 
         o_pos = {}
-        o_pos['name'] = o[0]
+        o_pos['name'] = o[0].decode()
         o_pos['r'] = o_polar[0]
         o_pos['theta'] = o_polar[1]
         o_pos['z'] = o_polar[2]
+        o_pos['visible'] = 1
+        #
+        o_pos['r'] = x
+        o_pos['theta'] = y
+        o_pos['z'] = z
+        o_pos['visible'] = 1
+        #
+
+        print("added obj")
 
         obj.append(o_pos)
 
