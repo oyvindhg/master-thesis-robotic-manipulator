@@ -61,11 +61,13 @@ def set_head(deg, wait=0, show=1):
 
 
 
-def set_position(r, theta, z, wait=1, show=0):
+def set_position(r, theta, z, wait=1, show=1):
 
     goal = [r, theta, z]
 
     current_position = motor.read_positions()
+    #next_position = kinematics.position_planner(goal, [675,264,180,200,180], show_plan=show)
+
     next_position = kinematics.position_planner(goal, current_position, show_plan=show)
 
     if next_position is False:

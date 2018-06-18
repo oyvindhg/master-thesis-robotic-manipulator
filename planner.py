@@ -37,6 +37,7 @@ def objects_match(objects, s):
 
     seen_obj_count = {}
     for obj in objects:
+        print(obj)
         if obj['name'] in seen_obj_count:
             seen_obj_count[obj['name']] += 1
         else:
@@ -77,7 +78,7 @@ def objects_match(objects, s):
             return 0
         else:
             if not seen_obj_count[key] == state_obj_count[key]:
-                print(key, "not the same number")
+                print(key, "not the same number1: Seen:", seen_obj_count[key], "state:", state_obj_count[key])
                 return 0
 
     for key in state_obj_count:
@@ -86,7 +87,7 @@ def objects_match(objects, s):
             return 0
         else:
             if not seen_obj_count[key] == state_obj_count[key]:
-                print(key, "not the same number")
+                print(key, "not the same number2")
                 return 0
     return 1
 

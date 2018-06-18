@@ -1,0 +1,6 @@
+(move m l1 l2)
+(pick-up-obstr m o l2)
+(move m l2 l1)
+(put-down-obstr m o l1)
+(move m l1 l2)
+(pick-up-block m b o l2 l1)

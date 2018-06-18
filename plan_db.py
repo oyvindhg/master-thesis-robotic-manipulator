@@ -56,6 +56,15 @@ def text_split(s):
      return head, tail
 
 def get_coordinates(object_name):
+    print("vis: ", obj_pos[object_name].is_visible())
+    if obj_pos[object_name].is_visible() == 0:
+        print("ÆÆÆÆÆÆÆÆÆÆÆÆinvisible")
+        for key in obj_pos:
+            type, _ = text_split(key)
+            if type == "bowl":
+                print("IM IN HERE")
+                obj_pos[object_name].r = obj_pos[key].r
+                obj_pos[object_name].theta = obj_pos[key].theta
     return obj_pos[object_name]
 
 def add_obj(object):
@@ -77,6 +86,8 @@ def fix_objects_pos(obj_list):
         for key in obj_pos:
             print('key:', key, 'r:', obj_pos[key].r, 'theta', obj_pos[key].theta, 'z', obj_pos[key].z)
             type, _ = text_split(key)
+            print(type)
+            print(obj['name'])
             if obj_pos[key].is_near(obj['r'], obj['theta'], obj['z'], 5) and type == obj['name']:
                 found_obj = 1
                 print("Match!")
@@ -92,12 +103,6 @@ def fix_objects_pos(obj_list):
                 if i not in taken and obj == type:
                     obj_pos[key] = Position(obj['r'], obj['theta'], obj['z'])
                     print("Moved", key, "to", obj['r'], obj['theta'], obj['z'])
-                    if obj == "bowl":
-                        for key2 in obj_pos:
-                            type2, num = text_split(key2)
-                            if key != key2 and (type2 == "apple" or type2 == "banana"):
-                                if obj_pos[key2].is_on(obj['r'], obj['theta'], 5):
-                                    obj_pos[key2] = Position(obj['r'], obj['theta'], obj_pos[key2].z)
 
 
 def objects_match_pos(objects):
@@ -125,11 +130,19 @@ def update_object(object):
     obj_pos[object['name']].set_visibility(object['visible'])
 
 def relocate_objects(objects):
+
     obj = []
     for key in obj_pos:
 
         if not obj_pos[key].is_visible():
             o_pos = {}
+
+            for key2 in obj_pos:
+                type, _ = text_split(key2)
+                if type == "bowl":
+                    obj_pos[key].r = obj_pos[key2].r
+                    obj_pos[key].theta = obj_pos[key2].theta
+
             o_pos['name'], num = text_split(key)
             o_pos['r'] = obj_pos[key].r
             o_pos['theta'] = obj_pos[key].theta
@@ -171,6 +184,9 @@ def write_problem(problem):
             f.write("\t\t" + key + " - bowl\n")
     f.write("\t)\n\n")
 
+    for key in obj_pos:
+        print("get", key)
+        get_coordinates(key)
 
     f.write("\t(:init\n")
     in_bowls = []

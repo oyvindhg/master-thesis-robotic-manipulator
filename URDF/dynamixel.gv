@@ -1,0 +1,29 @@
+digraph G {
+node [shape=box];
+"base_link" [label="base_link"];
+"platform" [label="platform"];
+"lower_arm" [label="lower_arm"];
+"middle_arm" [label="middle_arm"];
+"upper_arm" [label="upper_arm"];
+"pre_wrist" [label="pre_wrist"];
+"wrist" [label="wrist"];
+"post_wrist" [label="post_wrist"];
+"tip" [label="tip"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"base_link" -> "rotating_base" [label="xyz: 0 0 6 \nrpy: 0 -0 0"]
+"rotating_base" -> "platform"
+"platform" -> "lower_arm_actuator" [label="xyz: 0 0 5.5 \nrpy: 0 -0 0"]
+"lower_arm_actuator" -> "lower_arm"
+"lower_arm" -> "middle_arm_actuator" [label="xyz: 16 0 0 \nrpy: 0 -0 0"]
+"middle_arm_actuator" -> "middle_arm"
+"middle_arm" -> "upper_arm_actuator" [label="xyz: 9 0 0 \nrpy: 0 -0 0"]
+"upper_arm_actuator" -> "upper_arm"
+"upper_arm" -> "pre_wrist" [label="xyz: 0 0 1 \nrpy: 0 -0 0"]
+"pre_wrist" -> "pre_wrist"
+"pre_wrist" -> "wrist_actuator" [label="xyz: 9 0 0 \nrpy: 0 -0 0"]
+"wrist_actuator" -> "wrist"
+"wrist" -> "post_wrist" [label="xyz: 0 0 1.5 \nrpy: 0 -0 0"]
+"post_wrist" -> "post_wrist"
+"post_wrist" -> "grippers" [label="xyz: 16 0 0 \nrpy: 0 -0 0"]
+"grippers" -> "tip"
+}

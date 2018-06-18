@@ -1,0 +1,71 @@
+<robot name="dynamixel">
+  <link name="base_link" />		#NEEDS TO HAVE THIS NAME OMG HAVE I SPENT A WHOLE DAY TO FIND OUT
+  <link name="platform" />
+  <link name="lower_arm" />
+  <link name="middle_arm" />
+  <link name="upper_arm" />
+  <link name="pre_wrist" />
+  <link name="wrist" />
+  <link name="post_wrist" />
+  <link name="tip" />
+
+
+  <joint name="rotating_base" type="continuous">
+    <parent link="base_link"/>
+    <child link="platform"/>
+    <origin xyz="0 0 6" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <joint name="lower_arm_actuator" type="continuous">
+    <parent link="platform"/>
+    <child link="lower_arm"/>
+    <origin xyz="0 0 5.5" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+  </joint>
+
+  <joint name="middle_arm_actuator" type="continuous">
+    <parent link="lower_arm"/>
+    <child link="middle_arm"/>
+    <origin xyz="16 0 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+  </joint>
+
+  <joint name="upper_arm_actuator" type="continuous">
+    <parent link="middle_arm"/>
+    <child link="upper_arm"/>
+    <origin xyz="9 0 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" /> deg																
+  </joint>
+
+  <joint name="pre_wrist" type="continuous">
+    <parent link="upper_arm"/>
+    <child link="pre_wrist"/>
+    <origin xyz="0 0 1" rpy="0 0 0" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <joint name="wrist_actuator" type="continuous">
+    <parent link="pre_wrist"/>
+    <child link="wrist"/>
+    <origin xyz="9 0 0" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+  </joint>
+
+  <joint name="post_wrist" type="continuous">
+    <parent link="wrist"/>
+    <child link="post_wrist"/>
+    <origin xyz="0 0 1.5" rpy="0 0 0" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <joint name="grippers" type="continuous">
+    <parent link="post_wrist"/>
+    <child link="tip"/>
+    <origin xyz="16 0 0" rpy="0 0 0" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+
+
+</robot>

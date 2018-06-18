@@ -16,8 +16,6 @@ logging = logging.getLogger(__name__)
 # controller.init()
 
 
-
-
 # controller.close_grippers(wait=0)
 #
 # import time
@@ -60,17 +58,21 @@ i = 0
 
 objects = plan_db.get_obj_list()
 
-seen = perception.find_objects(objects, i, show=1)
+seen = perception.find_objects(objects, i, show=0)
 planner.update_problem(seen, [])
 
 import time
 
+fullt_t = time.time()
+
 while not goal_reached:
 
-    time.sleep(1)
+    #time.sleep(1)
 
 
+    t = time.time()
     plan = planner.make_plan()
+    print("Elapsed time replan: %f seconds", time.time() - t)
     goal_reached = 1
 
     if plan is None:
@@ -86,6 +88,7 @@ while not goal_reached:
 
             logging.info('Operation: %s', operation)
 
+            print("Elapsed time full lap: %f seconds", time.time() - fullt_t)
 
             print("press btn")
             keyboard.press_ESC()
@@ -115,13 +118,16 @@ while not goal_reached:
                 obj_upd['r'] = goal_coord.r
                 obj_upd['theta'] = goal_coord.theta
                 obj_upd['z'] = goal_coord.z + i
-                obj_upd['visible'] = operation[2]
+                obj_upd['visible'] = 0
 
                 planner.update_action(obj_upd)
 
-            seen = perception.find_objects(objects, i, show=1)
+            fullt_t = time.time()
+            seen = perception.find_objects(objects, i, show=0)
+            t = time.time()
             if planner.update_problem(seen, state):
                 goal_reached = 0
+                print("Elapsed time update problem: %f seconds", time.time() - t)
                 break
 
 logging.info('Reached goal!')

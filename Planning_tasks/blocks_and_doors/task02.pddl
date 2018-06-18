@@ -1,0 +1,30 @@
+(define (problem MANIPULATOR-1)
+
+(:domain MANIPULATOR)
+  (:objects
+	L1 L2 L3 - location
+	B1 B2 B3 B4 B5 B6 - block
+  )
+
+  (:init
+	(m-at L2)
+	(holding B4)
+	(adjacent L1 L2)(adjacent L2 L1)
+	(adjacent L2 L3)(adjacent L3 L2)
+	(b-at B1 L1)(b-at B2 L1)(b-at B3 L1)
+	(onground B1)(on B2 B1)(on B3 B2)(clear B3)
+	(b-at B5 L2)
+	(onground B5)(clear B5)
+	(b-at B6 L3)
+	(onground B6)(clear B6)
+  )
+
+  (:goal 
+	(and(b-at B1 L3)
+	(on B2 B1)
+	(on B3 B2)
+	(on B4 B3)
+	(on B5 B4)
+	(on B6 B5))
+  )
+)

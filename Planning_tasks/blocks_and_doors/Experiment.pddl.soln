@@ -1,0 +1,6 @@
+(move l3 l2)
+(move l2 l1)
+(pickup b1 l1)
+(move l1 l2)
+(move l2 l3)
+(place b1 l3)

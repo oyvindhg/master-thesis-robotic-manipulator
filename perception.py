@@ -167,53 +167,26 @@ def find_objects(objects, i, show = 0, save = 0):
     #
     # o_pos = {}
     # o_pos['name'] = 'apple'
-    # o_pos['r'] = 20
+    # o_pos['r'] = 30
     # o_pos['theta'] = 10
     # o_pos['z'] = 10
     # o_pos['visible'] = 1
     #
-    # if i >= 2:
-    #     o_pos['r'] = 30
-    #     o_pos['z'] = 14
-    #
-    # if i >= 6:
-    #     o_pos['r'] = 20
-    #     o_pos['theta'] = 10
-    #     o_pos['z'] = 5 + i
     # obj_list.append(o_pos)
+    # # if i < 2:
+    # #     obj_list.append(o_pos)
     #
-    # o_pos = {}
-    # o_pos['name'] = 'apple'
-    # o_pos['r'] = 20
-    # o_pos['theta'] = 10
-    # o_pos['z'] = 8
-    # o_pos['visible'] = 1
-    # # if i >= 3:
-    # #     o_pos['r'] = 30
-    # #     o_pos['z'] = 14
+    # # o_pos = {}
+    # # o_pos['name'] = 'banana'
+    # # o_pos['r'] = 30
+    # # o_pos['theta'] = 10
+    # # o_pos['z'] = 10
+    # # o_pos['visible'] = 1
+    # #
+    # # obj_list.append(o_pos)
+    # # if i<1:
+    # #     obj_list.append(o_pos)
     #
-    # if i >= 5:
-    #     o_pos['r'] = 20
-    #     o_pos['theta'] = 10
-    #     o_pos['z'] = 5 + i
-    #
-    # obj_list.append(o_pos)
-    #
-    # o_pos = {}
-    # o_pos['name'] = 'banana'
-    # o_pos['r'] = 20
-    # if i >= 1:
-    #     o_pos['r'] = 30
-    # o_pos['theta'] = 10
-    # o_pos['z'] = 14
-    # o_pos['visible'] = 1
-    #
-    # if i >= 4:
-    #     o_pos['r'] = 20
-    #     o_pos['theta'] = 10
-    #     o_pos['z'] = 5 + i
-    #
-    # obj_list.append(o_pos)
     #
     # o_pos = {}
     # o_pos['name'] = 'bowl'
@@ -221,6 +194,10 @@ def find_objects(objects, i, show = 0, save = 0):
     # o_pos['theta'] = 10
     # o_pos['z'] = 5
     # o_pos['visible'] = 1
+    #
+    # if i>=3:
+    #     o_pos['r'] = 10
+    #
     #
     # obj_list.append(o_pos)
     #
@@ -232,7 +209,7 @@ def find_objects(objects, i, show = 0, save = 0):
     ##################################
 
 
-
+    import time
 
     im = get_image()
     d = get_depth()
@@ -241,7 +218,13 @@ def find_objects(objects, i, show = 0, save = 0):
     # #waste = get_depth()
     # d = np.load("depth.npy")
 
+    t = time.time()
+
     boxes = darknet.detect(net, meta, im, thresh=0.15)
+
+    print("Elapsed time detection: %f seconds", time.time() - t)
+
+    t = time.time()
 
     print(boxes)
 
@@ -313,5 +296,7 @@ def find_objects(objects, i, show = 0, save = 0):
         print("added obj")
 
         obj.append(o_pos)
+
+    print("Elapsed time localization: %f seconds", time.time() - t)
 
     return obj
