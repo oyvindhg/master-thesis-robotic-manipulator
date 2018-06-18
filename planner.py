@@ -33,16 +33,15 @@ def make_plan():
 
 def objects_match(objects, s):
 
-    print(s)
-
     seen_obj_count = {}
     for obj in objects:
-        print(obj)
         if obj['name'] in seen_obj_count:
             seen_obj_count[obj['name']] += 1
         else:
             seen_obj_count[obj['name']] = 1
-            print(obj['name'], "regirstered")
+
+    if objects == s == []:
+        return 0
 
     state_obj_count = {}
     bowl_id = []
@@ -54,7 +53,6 @@ def objects_match(objects, s):
                 state_obj_count[obj_name] += 1
             else:
                 state_obj_count[obj_name] = 1
-                print(obj_name, "also registered")
         if obj[0] == "(empty" and obj[1] not in bowl_id:
             bowl_id.append(obj[1])
             obj_name = obj[1].rstrip('0123456789)')
@@ -62,7 +60,6 @@ def objects_match(objects, s):
                 state_obj_count[obj_name] += 1
             else:
                 state_obj_count[obj_name] = 1
-                print(obj_name, "also registered")
         if obj[0] == "(inbowl" and obj[2] not in bowl_id:
             bowl_id.append(obj[2])
             obj_name = obj[2].rstrip('0123456789)')
@@ -70,24 +67,21 @@ def objects_match(objects, s):
                 state_obj_count[obj_name] += 1
             else:
                 state_obj_count[obj_name] = 1
-                print(obj_name, "also registered")
     for key in seen_obj_count:
-        print(key)
         if not key in state_obj_count:
-            print(key, "not found")
+            logging.debug(key, "not found")
             return 0
         else:
             if not seen_obj_count[key] == state_obj_count[key]:
-                print(key, "not the same number1: Seen:", seen_obj_count[key], "state:", state_obj_count[key])
+                logging.debug(key, "not the same number: Seen:", seen_obj_count[key], "state:", state_obj_count[key])
                 return 0
 
     for key in state_obj_count:
         if not key in seen_obj_count:
-            print(key, "not found")
             return 0
         else:
             if not seen_obj_count[key] == state_obj_count[key]:
-                print(key, "not the same number2")
+                logging.debug(key, "not the same number")
                 return 0
     return 1
 

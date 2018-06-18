@@ -8,8 +8,8 @@ from coordinate_maths import polar, rotation_m
 from create_3D_model import plot_3d
 import statistics
 import math
-# import logging
-# logging = logging.getLogger(__name__)
+import logging
+logging = logging.getLogger(__name__)
 
 
 DEPTH_REGISTERED   = 4        # processed depth data in mm, aligned to 640x480 RGB
@@ -158,7 +158,7 @@ def take_images():
     show_image(im)
     cv2.waitKey()
 
-def find_objects(objects, i, show = 0, save = 0):
+def find_objects(objects, show = 0, save = 0):
 
 
     ############NOOOOOOOOOOOOOOOOOOO
@@ -209,24 +209,13 @@ def find_objects(objects, i, show = 0, save = 0):
     ##################################
 
 
-    import time
-
     im = get_image()
     d = get_depth()
 
-    # im = np.load("image.npy")
-    # #waste = get_depth()
-    # d = np.load("depth.npy")
-
-    t = time.time()
 
     boxes = darknet.detect(net, meta, im, thresh=0.15)
 
-    print("Elapsed time detection: %f seconds", time.time() - t)
-
-    t = time.time()
-
-    print(boxes)
+    logging.debug("Boxes:", boxes)
 
     if show:
         show_labeled(im, boxes)
@@ -249,7 +238,7 @@ def find_objects(objects, i, show = 0, save = 0):
     for o in boxes:
 
         if o[0].decode() not in objects:
-            print(o[0].decode(), "not in objects")
+            logging.debug(o[0].decode(), "not in objects")
             continue
 
         im_o = isolate_object(im, d, o)
@@ -262,7 +251,7 @@ def find_objects(objects, i, show = 0, save = 0):
 
         x, y, z = object_depth_cm(im_o, d)
         if x == y == z == 0:
-            print(o[0].decode(), "at 0 0 0")
+            logging.debug(o[0].decode(), "at 0 0 0")
             continue
 
         length = math.sqrt(pow(x,2) + pow(y,2) + pow(z,2))
@@ -293,10 +282,8 @@ def find_objects(objects, i, show = 0, save = 0):
         o_pos['visible'] = 1
         #
 
-        print("added obj")
 
         obj.append(o_pos)
 
-    print("Elapsed time localization: %f seconds", time.time() - t)
 
     return obj

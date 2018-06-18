@@ -1,5 +1,8 @@
 import coordinate_maths
 import math
+import logging
+
+logging = logging.getLogger(__name__)
 
 class Position:
     r = 0
@@ -29,8 +32,6 @@ class Position:
         x1, y1, z1 = coordinate_maths.cartesian(r, theta, 0)
         x2, y2, z2 = coordinate_maths.cartesian(self.r, self.theta, 0)
 
-        print(math.sqrt(pow(x2-x1,2)+pow(y2-y1,2)))
-
         if math.sqrt(pow(x2-x1,2)+pow(y2-y1,2)) < length:
             return 1
         return 0
@@ -56,13 +57,10 @@ def text_split(s):
      return head, tail
 
 def get_coordinates(object_name):
-    print("vis: ", obj_pos[object_name].is_visible())
     if obj_pos[object_name].is_visible() == 0:
-        print("ÆÆÆÆÆÆÆÆÆÆÆÆinvisible")
         for key in obj_pos:
             type, _ = text_split(key)
             if type == "bowl":
-                print("IM IN HERE")
                 obj_pos[object_name].r = obj_pos[key].r
                 obj_pos[object_name].theta = obj_pos[key].theta
     return obj_pos[object_name]
@@ -72,7 +70,7 @@ def add_obj(object):
     obj_num += 1
     obj_pos[object['name'] + str(obj_num)] = Position(object['r'], object['theta'], object['z'])
     obj_pos[object['name'] + str(obj_num)].set_visibility(object['visible'])
-    print('key:', object['name'] + str(obj_num), 'r:', obj_pos[object['name'] + str(obj_num)].r, 'theta', obj_pos[object['name'] + str(obj_num)].theta, 'z', obj_pos[object['name'] + str(obj_num)].z)
+    logging.debug('Added object. Key:', object['name'] + str(obj_num), 'r:', obj_pos[object['name'] + str(obj_num)].r, 'theta', obj_pos[object['name'] + str(obj_num)].theta, 'z', obj_pos[object['name'] + str(obj_num)].z)
 
 def remove_obj(object_name):
 
@@ -81,16 +79,12 @@ def remove_obj(object_name):
 def fix_objects_pos(obj_list):
     registered_obj = []
     for obj in obj_list:
-        print(obj)
         found_obj = 0
         for key in obj_pos:
-            print('key:', key, 'r:', obj_pos[key].r, 'theta', obj_pos[key].theta, 'z', obj_pos[key].z)
+            logging.debug('Fixing objects. Key:', key, 'r:', obj_pos[key].r, 'theta', obj_pos[key].theta, 'z', obj_pos[key].z)
             type, _ = text_split(key)
-            print(type)
-            print(obj['name'])
             if obj_pos[key].is_near(obj['r'], obj['theta'], obj['z'], 5) and type == obj['name']:
                 found_obj = 1
-                print("Match!")
                 registered_obj.append(key)
         if found_obj == 0:
             return 0
@@ -102,26 +96,24 @@ def fix_objects_pos(obj_list):
             for i, obj in enumerate(obj_list):
                 if i not in taken and obj == type:
                     obj_pos[key] = Position(obj['r'], obj['theta'], obj['z'])
-                    print("Moved", key, "to", obj['r'], obj['theta'], obj['z'])
+                    logging.debug("Moved", key, "to", obj['r'], obj['theta'], obj['z'])
 
 
 def objects_match_pos(objects):
     registered_obj = []
     for obj in objects:
-        print(obj)
         found_obj = 0
         for key in obj_pos:
-            print('key:', key, 'r:', obj_pos[key].r, 'theta', obj_pos[key].theta, 'z', obj_pos[key].z)
+            logging.debug('Matching objects. Key:', key, 'r:', obj_pos[key].r, 'theta', obj_pos[key].theta, 'z', obj_pos[key].z)
             type, _ = text_split(key)
             if obj_pos[key].is_near(obj['r'], obj['theta'], obj['z'], 5) and type == obj['name']:
                 found_obj = 1
-                print("Match!")
                 registered_obj.append(key)
         if found_obj == 0:
             return 0
     for key in obj_pos:
         if key not in registered_obj and obj_pos[key].is_visible() == 1:
-            print(key, " not seen")
+            logging.debug(key, " not seen")
             return 0
     return 1
 
@@ -152,7 +144,6 @@ def relocate_objects(objects):
             obj.append(o_pos)
 
     for object in obj:
-        print("relocated:", object)
         objects.append(object)
 
     obj_pos.clear()
@@ -185,7 +176,6 @@ def write_problem(problem):
     f.write("\t)\n\n")
 
     for key in obj_pos:
-        print("get", key)
         get_coordinates(key)
 
     f.write("\t(:init\n")
@@ -206,7 +196,7 @@ def write_problem(problem):
             for key2 in obj_pos:
                 type2, num = text_split(key2)
                 if key != key2 and (type2 == "apple" or type2 == "banana"):
-                    print("The distance between", key, key2, " is ", obj_pos[key2].is_on(r,theta,5))
+                    logging.debug("The distance between", key, key2, " is ", obj_pos[key2].is_on(r,theta,5))
                     if obj_pos[key2].is_on(r,theta,5):
                         f.write("\t\t(inbowl " + key2 + " " + key + ")\n")
                         in_bowls.append(key2)
@@ -279,6 +269,7 @@ def write_problem(problem):
                 else:
                     f.write("\t\t(on " + key2 + " " + last_id + ")\n")
                 last_id = key2
-        f.write("\t\t)\n\t)\n)")
+
+    f.write("\t\t)\n\t)\n)")
 
     f.close()
