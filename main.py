@@ -22,32 +22,12 @@ planner.update_problem(seen, [])
 goal_reached = 0
 i = 0
 
-current_plan = "Planning_tasks/fruits/current_plan.txt"
 
 while not goal_reached:
 
     plan = planner.make_plan()
 
-    f = open(current_plan, "w")
 
-    f.write("\t\tPLAN\n\n")
-
-    j = 1
-    for step in plan:
-        f.write('Step ' + str(j) + ": ")
-        k = 1
-        for txt in step.action.name:
-            txt = txt.rstrip('0123456789')
-            if txt == "bowl":
-                f.write("in " + txt + " ")
-            elif k == 3 and (txt == "apple" or txt == "banana"):
-                f.write("on " + txt + " ")
-            else:
-                f.write(txt + " ")
-            k += 1
-        f.write('\n\n')
-        j += 1
-    f.close()
     goal_reached = 1
 
     if plan is None:
@@ -95,10 +75,7 @@ while not goal_reached:
             if planner.update_problem(seen, state):
                 goal_reached = 0
                 break
-f = open(current_plan, "w")
-f.write("\t\tPLAN\n\n")
-f.write("GOAL REACHED")
-f.close()
+
 logging.info('Reached goal!')
 
 
