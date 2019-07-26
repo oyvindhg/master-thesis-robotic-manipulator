@@ -2,7 +2,7 @@
 
 **Description:** This repo contains all code used for my master's thesis for the Cybernetics and Robotics study program at NTNU. Feel free to read my master's thesis at the following page: http://hdl.handle.net/11250/2563985
 
-![robot](https://lh3.googleusercontent.com/DmKbFWLeJ72mvC02cdx-FwjW4fpoDSmLOS5LSRZQIoeW7rd3gP4LVUFS6El43nS-zA3Ke-Uybvox4_9glMROxLdjD3XORRnLcTr9I1yKVc25cNKa3pgr6uSyx1acX0Ot2Vop43qC1C0rlsLFe0r7JBr_B504bKy8DbdB1y1JR_WbuJpwMGhI6U2lrg-hJTOAUVT869ZLIIed5jfn9zz_u1Cg518caJPc2cdA_SXimiCVcjP2-fW43J8wEkJ7FEDV3AZlNa7SDpKZvSEbKvJnkJattBOnkIksXw-9SuvoTvekjlpe4AbZF2nS1ti5QXCGCHFLdnAiRERQEr5UAo2A-5DLwVQ9lCMwT0nN9nTbOkeUYqLNQOu9liPjgJNbYWR1WRDk2J5GSfpTBYKSvEi89Fuyq3CunFbZn62kAxOYicpufqQx7NgM4DjasJB41DWurk7ImS53tDfL8H0arGg5LIIwxauUEbk_efjmUAHsgnaHgYbuz0ZwgAhrP-hyKkBLiKfVPG9qwdftlIycWlPR-SQQStU8dMJCFcoUdET4QNw8CsFONwJVqB5ooZIazuc4MV7BcCde3dGqkqotq4pm3lUWgMv_o9-BOB0fFU8Igb2XYT2sIaqIQY6J92Nx0mpaM6ihOIvku35cWd20RYuOdnk2ufWYtYlh=w1407-h938-no)
+![robot](Robot.JPG?raw=true "Picture of the Robotic Manipulator")
 
 ## Master's thesis abstract
 This thesis aims to explore the fusion of high-level AI planning and low-level robotic control. Although the field of AI planning can be said to have sprung out from robotics, researchers have recently expressed concern that the two fields have moved in separate directions even though there is great potential for development in their intersection. This has raised a number of open questions about how to best merge AI planning techniques with robotic control. This project explores some of these questions through the process of building an autonomous robot system.
